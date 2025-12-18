@@ -16,7 +16,7 @@ type SortOption = 'date-desc' | 'date-asc' | 'title' | 'last-read';
 
 export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, theme, toggleTheme }) => {
     const [search, setSearch] = useState('');
-    const [sort, setSort] = useState<SortOption>('date-desc');
+    const [sort] = useState<SortOption>('date-desc');
     const [isAdding, setIsAdding] = useState(false);
 
     // New Book Form State
