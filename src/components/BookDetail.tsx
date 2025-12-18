@@ -170,7 +170,6 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId }) => {
             {/* Input Form */}
             {book.status !== 'completed' && (
                 <div className="log-form-section">
-                    <h3>Update Progress</h3>
                     <form onSubmit={handleAddLog} className="log-form">
                         <div className="form-group">
                             <label>Current Page (Today)</label>
@@ -182,7 +181,7 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId }) => {
                                 min="0"
                             />
                         </div>
-                        <button type="submit">Update</button>
+                        <button type="submit" className="update-btn">Update</button>
                     </form>
                     {warning && <div className="warning-msg">⚠️ {warning}</div>}
                 </div>
