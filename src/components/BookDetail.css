@@ -20,14 +20,14 @@
 
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.5rem;
     margin-top: 0;
 }
 
 .stat-card {
     background: var(--sidebar-bg);
-    padding: 0.4rem;
+    padding: 0.3rem;
     border-radius: 8px;
     box-shadow: var(--shadow-sm);
     text-align: center;
