@@ -79,6 +79,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
             <div className="sidebar-header">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                     <h2>ReadLog</h2>
+                    <button onClick={toggleTheme} style={{ padding: '0.4rem', fontSize: '1.2rem', background: 'none', border: 'none' }}>
+                        {theme === 'light' ? '🌙' : '☀️'}
+                    </button>
                 </div>
                 <button onClick={() => setIsAdding(!isAdding)}>{isAdding ? 'Cancel' : '+ New Book'}</button>
             </div>
@@ -135,29 +138,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                 ))}
                 {books?.length === 0 && <div className="empty-state">No books found.</div>}
             </div>
-            <div style={{ marginTop: 'auto', display: 'flex', gap: '0.5rem', padding: '0.5rem 0' }}>
-                <div style={{ flex: 1 }}>
-                    <DataManagement />
-                </div>
-                <button
-                    onClick={toggleTheme}
-                    style={{
-                        padding: '0.5rem',
-                        fontSize: '1.2rem',
-                        background: 'none',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: '40px'
-                    }}
-                    title="Toggle Theme"
-                >
-                    {theme === 'light' ? '🌙' : '☀️'}
-                </button>
-            </div>
+            <DataManagement />
         </div>
     );
 };
