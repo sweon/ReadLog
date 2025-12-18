@@ -159,6 +159,19 @@
 .export-btn {
     font-size: 0.9rem;
     padding: 0.6em 1em;
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.export-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background-color: rgba(0, 123, 255, 0.05);
+    /* Subtle blue tint */
 }
 
 .delete-btn {
