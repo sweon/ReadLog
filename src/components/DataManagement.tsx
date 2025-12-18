@@ -115,7 +115,7 @@ export const DataManagement: React.FC = () => {
     if (!isOpen) {
         return (
             <button className="settings-btn" onClick={() => setIsOpen(true)} title="Manage Data">
-                ⚙️
+                ⚙️ Data Sync
             </button>
         );
     }
@@ -135,58 +135,89 @@ export const DataManagement: React.FC = () => {
                         <button className={view === 'import' ? 'active' : ''} onClick={() => setView('import')}>Import</button>
                     </div>
 
-                    {view === 'main' && (
-                        <div className="tab-content">
-                            <p>Total Books: {books?.length}</p>
-                            <button onClick={() => setView('export')}>Backup Data</button>
-                            <button onClick={() => setView('import')}>Restore Data</button>
-                        </div>
-                    )}
+                    <div className="tab-content-container">
+                        {view === 'main' && (
+                            <div className="tab-content overview-tab">
+                                <div className="overview-stats">
+                                    <div className="stat-box">
+                                        <span className="count">{books?.length || 0}</span>
+                                        <span className="label">Total Books</span>
+                                    </div>
+                                    <div className="stat-box">
+                                        <span className="count">v1.0</span>
+                                        <span className="label">Schema</span>
+                                    </div>
+                                </div>
+                                <div className="action-cards">
+                                    <div className="action-card" onClick={() => setView('export')}>
+                                        <div className="icon">📤</div>
+                                        <h4>Backup Data</h4>
+                                        <p>Export your reading logs to a JSON file.</p>
+                                    </div>
+                                    <div className="action-card" onClick={() => setView('import')}>
+                                        <div className="icon">📥</div>
+                                        <h4>Restore Data</h4>
+                                        <p>Import logs from a previous backup.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
-                    {view === 'export' && (
-                        <div className="tab-content">
-                            <h4>Select Books to Export</h4>
-                            <div className="book-checklist">
-                                <label>
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedBooks.length === 0}
-                                        onChange={() => setSelectedBooks([])}
-                                    />
-                                    All Books ({books?.length})
-                                </label>
-                                <hr />
-                                {books?.map(book => (
-                                    <label key={book.id}>
+                        {view === 'export' && (
+                            <div className="tab-content export-tab">
+                                <div className="section-header">
+                                    <h4>Select Books</h4>
+                                    <button className="text-btn" onClick={() => setSelectedBooks([])}>Clear All</button>
+                                </div>
+                                <div className="book-checklist">
+                                    <label className="checkbox-row all-books">
                                         <input
                                             type="checkbox"
-                                            checked={selectedBooks.includes(book.id!)}
-                                            onChange={(e) => {
-                                                // Logic: if selecting specific, ensure "All" logical state is handled
-                                                // Simplification: Empty array = All. Populated = Specific.
-                                                if (e.target.checked) {
-                                                    setSelectedBooks([...selectedBooks, book.id!]);
-                                                } else {
-                                                    setSelectedBooks(selectedBooks.filter(id => id !== book.id));
-                                                }
-                                            }}
+                                            checked={selectedBooks.length === 0}
+                                            onChange={() => setSelectedBooks([])}
                                         />
-                                        {book.title}
+                                        <span className="custom-checkbox"></span>
+                                        <span className="label-text">All Books ({books?.length})</span>
                                     </label>
-                                ))}
+                                    <div className="divider"></div>
+                                    {books?.map(book => (
+                                        <label key={book.id} className="checkbox-row">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedBooks.includes(book.id!)}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        setSelectedBooks([...selectedBooks, book.id!]);
+                                                    } else {
+                                                        setSelectedBooks(selectedBooks.filter(id => id !== book.id));
+                                                    }
+                                                }}
+                                            />
+                                            <span className="custom-checkbox"></span>
+                                            <span className="label-text">{book.title}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                                <button className="primary-btn full-width" onClick={handleExport}>
+                                    Download JSON Backup
+                                </button>
                             </div>
-                            <button className="primary-btn" onClick={handleExport}>Export JSON</button>
-                        </div>
-                    )}
+                        )}
 
-                    {view === 'import' && (
-                        <div className="tab-content">
-                            <h4>Import Data</h4>
-                            <p>Select a JSON file to restore/merge.</p>
-                            <input type="file" accept=".json" onChange={handleImport} />
-                            <p className="note">Existing data will be preserved. Duplicate entries will be skipped.</p>
-                        </div>
-                    )}
+                        {view === 'import' && (
+                            <div className="tab-content import-tab">
+                                <div className="upload-area">
+                                    <div className="upload-icon">📂</div>
+                                    <h4>Select Backup File</h4>
+                                    <p>Click to browse JSON files</p>
+                                    <input type="file" accept=".json" onChange={handleImport} title="Upload JSON backup" />
+                                </div>
+                                <div className="info-box">
+                                    <p><strong>Note:</strong> Existing data will be preserved. Duplicate entries (same date and page) will be skipped.</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
