@@ -135,13 +135,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
             )}
 
             <div className="controls">
-                <input
-                    className="search-input"
-                    type="text"
-                    placeholder="Search library..."
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                />
+                <div className="search-wrapper">
+                    <input
+                        className="search-input"
+                        type="text"
+                        placeholder="Search library..."
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                    />
+                    {search && (
+                        <button
+                            className="clear-search-btn"
+                            onClick={() => setSearch('')}
+                            title="Clear Search"
+                        >
+                            ×
+                        </button>
+                    )}
+                </div>
                 <div className="sort-wrapper">
                     <select
                         className="sort-select"
