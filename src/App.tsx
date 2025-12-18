@@ -37,7 +37,7 @@ function App() {
         </header>
 
         {selectedBookId ? (
-          <BookDetail bookId={selectedBookId} />
+          <BookDetail bookId={selectedBookId} onDelete={() => setSelectedBookId(null)} />
         ) : (
           <div className="empty-state-main">
             <h1>Select a book to view progress</h1>

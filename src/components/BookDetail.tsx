@@ -10,9 +10,10 @@ import './BookDetail.css';
 
 interface BookDetailProps {
     bookId: number;
+    onDelete: () => void;
 }
 
-export const BookDetail: React.FC<BookDetailProps> = ({ bookId }) => {
+export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete }) => {
     const [pageInput, setPageInput] = useState('');
     const [warning, setWarning] = useState('');
     const [showCongrats, setShowCongrats] = useState(false);
@@ -85,6 +86,16 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId }) => {
         }
     };
 
+    const handleDeleteBook = async () => {
+        if (confirm(`Are you sure you want to delete "${book.title}" and all its reading logs? This cannot be undone.`)) {
+            await db.transaction('rw', db.books, db.logs, async () => {
+                await db.logs.where('bookId').equals(book.id!).delete();
+                await db.books.delete(book.id!);
+            });
+            onDelete();
+        }
+    };
+
     const exportChart = async () => {
         if (chartRef.current) {
             const canvas = await html2canvas(chartRef.current, {
@@ -104,8 +115,21 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId }) => {
     return (
         <div className="book-detail">
             {/* Header / Title */}
-            <div className="book-header">
+            <div className="book-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h1>{book.title}</h1>
+                <button
+                    onClick={handleDeleteBook}
+                    style={{
+                        background: 'transparent',
+                        border: '1px solid var(--danger-color)',
+                        color: 'var(--danger-color)',
+                        padding: '0.4em 0.8em',
+                        fontSize: '0.9rem'
+                    }}
+                    title="Delete Book"
+                >
+                    Delete
+                </button>
             </div>
 
             {/* Progress Chart */}
