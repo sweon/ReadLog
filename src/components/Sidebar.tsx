@@ -86,26 +86,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
     return (
         <div className="sidebar">
             <div className="sidebar-header">
-                <div className="logo-section">
-
-                    <div className="header-actions">
+                <div className="header-actions">
+                    <button
+                        className={`icon-btn add-btn ${isAdding ? 'active' : ''}`}
+                        onClick={() => setIsAdding(!isAdding)}
+                        title="Add New Book"
+                    >
+                        + Add
+                    </button>
+                    <div className="right-actions">
+                        <DataManagement />
                         <button
-                            className={`icon-btn add-btn ${isAdding ? 'active' : ''}`}
-                            onClick={() => setIsAdding(!isAdding)}
-                            title="Add New Book"
+                            className="icon-btn"
+                            onClick={toggleTheme}
+                            title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
                         >
-                            + Add
+                            {theme === 'light' ? '🌙' : '☀️'}
                         </button>
-                        <div className="right-actions">
-                            <DataManagement />
-                            <button
-                                className="icon-btn"
-                                onClick={toggleTheme}
-                                title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
-                            >
-                                {theme === 'light' ? '🌙' : '☀️'}
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
