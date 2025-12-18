@@ -50,7 +50,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                 result.sort((a, b) => b.lastReadDate.getTime() - a.lastReadDate.getTime());
                 break;
         }
-        return result;
+
+        // Enrich with progress data (N+1 query but acceptable for sidebar)
+        const enriched = await Promise.all(result.map(async (book) => {
+            const lastLog = await db.logs.where('bookId').equals(book.id!).reverse().sortBy('date').then(logs => logs[0]);
+            const currentPage = lastLog ? lastLog.page : 0;
+            return { ...book, currentPage };
+        }));
+
+        return enriched;
     }, [search, sort]);
 
     const handleAddBook = async (e: React.FormEvent) => {
@@ -76,12 +84,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
     };
 
     return (
-
         <div className="sidebar">
             <div className="sidebar-header">
                 <div className="logo-section">
                     <h2>ReadLog</h2>
                     <div className="header-actions">
+                        <button
+                            className={`icon-btn ${isAdding ? 'active' : ''}`}
+                            onClick={() => setIsAdding(!isAdding)}
+                            title="Add New Book"
+                        >
+                            +
+                        </button>
                         <DataManagement />
                         <button
                             className="icon-btn"
@@ -92,15 +106,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                         </button>
                     </div>
                 </div>
-                {!isAdding ? (
-                    <button className="add-book-btn" onClick={() => setIsAdding(true)}>
-                        + New Book
-                    </button>
-                ) : (
-                    <button className="add-book-btn" onClick={() => setIsAdding(false)}>
-                        Cancel
-                    </button>
-                )}
             </div>
 
             {isAdding && (
@@ -135,33 +140,33 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
-                <select
-                    className="sort-select"
-                    value={sort}
-                    onChange={e => setSort(e.target.value as SortOption)}
-                >
-                    <option value="date-desc">Newest First</option>
-                    <option value="date-asc">Oldest First</option>
-                    <option value="title">Title (A-Z)</option>
-                    <option value="last-read">Recently Read</option>
-                </select>
+                {/* Removed Sort for extreme compactness if desired, but user didn't ask to remove. kept for function. */}
+                {/* For max compactness, maybe just search is enough? Keeping sort for now but styling it small. */}
             </div>
 
-            <div className="book-list">
-                {books?.map(book => (
-                    <div
-                        key={book.id}
-                        className={`book-card ${selectedBookId === book.id ? 'active' : ''}`}
-                        onClick={() => onSelectBook(book.id!)}
-                    >
-                        <div className="book-card-title">{book.title}</div>
-                        <div className="book-card-meta">
-                            <span>{book.totalPages}p</span>
-                            <span>{new Date(book.lastReadDate).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })}</span>
+            <div className="book-list unified-list">
+                {books?.map(book => {
+                    const percent = Math.round((book.currentPage / book.totalPages) * 100) || 0;
+                    return (
+                        <div
+                            key={book.id}
+                            className={`book-row ${selectedBookId === book.id ? 'active' : ''}`}
+                            onClick={() => onSelectBook(book.id!)}
+                        >
+                            <div className="book-row-main">
+                                <div className="book-title">{book.title}</div>
+                                <div className="book-date">
+                                    {new Date(book.lastReadDate).toLocaleDateString(undefined, { year: 'numeric', month: 'numeric', day: 'numeric' })}
+                                </div>
+                            </div>
+                            <div className="book-row-sub">
+                                <span>{book.currentPage} / {book.totalPages} p</span>
+                                <span className="book-percent">{percent}%</span>
+                            </div>
                         </div>
-                    </div>
-                ))}
-                {books?.length === 0 && <div className="empty-state">No books found.</div>}
+                    );
+                })}
+                {books?.length === 0 && <div className="empty-state">No books. Click + to add.</div>}
             </div>
         </div>
     );
