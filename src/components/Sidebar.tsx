@@ -76,10 +76,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
     };
 
     return (
+    return (
         <div className="sidebar">
             <div className="sidebar-header">
                 <div className="logo-section">
                     <h2>ReadLog</h2>
+                    <div className="header-actions">
+                        <DataManagement />
+                        <button
+                            className="icon-btn"
+                            onClick={toggleTheme}
+                            title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+                        >
+                            {theme === 'light' ? '🌙' : '☀️'}
+                        </button>
+                    </div>
                 </div>
                 {!isAdding ? (
                     <button className="add-book-btn" onClick={() => setIsAdding(true)}>
@@ -145,25 +156,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                     >
                         <div className="book-card-title">{book.title}</div>
                         <div className="book-card-meta">
-                            <span>{book.totalPages} pages</span>
-                            <span>{new Date(book.lastReadDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                            <span>{book.totalPages}p</span>
+                            <span>{new Date(book.lastReadDate).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })}</span>
                         </div>
                     </div>
                 ))}
-                {books?.length === 0 && <div className="empty-state">No books found. Why not add one?</div>}
-            </div>
-
-            <div className="sidebar-footer">
-                <div className="footer-btn-wrapper">
-                    <DataManagement />
-                </div>
-                <button
-                    className="theme-toggle-btn"
-                    onClick={toggleTheme}
-                    title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
-                >
-                    {theme === 'light' ? '🌙' : '☀️'}
-                </button>
+                {books?.length === 0 && <div className="empty-state">No books found.</div>}
             </div>
         </div>
     );

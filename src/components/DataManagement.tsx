@@ -114,8 +114,8 @@ export const DataManagement: React.FC = () => {
     // UI rendering
     if (!isOpen) {
         return (
-            <button className="settings-btn" onClick={() => setIsOpen(true)}>
-                ⚙️ Manage Data
+            <button className="settings-btn" onClick={() => setIsOpen(true)} title="Manage Data">
+                ⚙️
             </button>
         );
     }
