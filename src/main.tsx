@@ -16,6 +16,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 
+console.log('ReadLog: Starting application sequence...');
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
