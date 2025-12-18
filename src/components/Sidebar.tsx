@@ -16,8 +16,35 @@ type SortOption = 'date-desc' | 'date-asc' | 'title' | 'last-read';
 
 export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, theme, toggleTheme }) => {
     const [search, setSearch] = useState('');
-    const [sort] = useState<SortOption>('date-desc');
+    const [sort, setSort] = useState<SortOption>('date-desc');
     const [isAdding, setIsAdding] = useState(false);
+
+    // ... (keep existing lines)
+
+    return (
+        // ...
+        <div className="controls">
+            <input
+                className="search-input"
+                type="text"
+                placeholder="Search..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+            />
+            <div className="sort-wrapper">
+                <select
+                    className="sort-select"
+                    value={sort}
+                    onChange={e => setSort(e.target.value as SortOption)}
+                    title="Sort Books"
+                >
+                    <option value="date-desc">Newest</option>
+                    <option value="date-asc">Oldest</option>
+                    <option value="title">A-Z</option>
+                    <option value="last-read">Recent</option>
+                </select>
+            </div>
+        </div>
 
     // New Book Form State
     const [newTitle, setNewTitle] = useState('');
