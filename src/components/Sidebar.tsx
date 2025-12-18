@@ -157,6 +157,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
             <div className="book-list unified-list">
                 {books?.map(book => {
                     const percent = Math.round((book.currentPage / book.totalPages) * 100) || 0;
+                    const dateObj = new Date(book.lastReadDate);
+                    const formattedDate = `${dateObj.getFullYear().toString().slice(2)}.${(dateObj.getMonth() + 1).toString().padStart(2, '0')}.${dateObj.getDate().toString().padStart(2, '0')}`;
+
                     return (
                         <div
                             key={book.id}
@@ -167,8 +170,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                                 <div className="book-title">{book.title}</div>
                             </div>
                             <div className="book-row-sub">
-                                <span className="book-progress">{book.currentPage}/{book.totalPages}p ({percent}%)</span>
-                                <span className="book-date">{new Date(book.lastReadDate).toLocaleDateString(undefined, { year: '2-digit', month: 'numeric', day: 'numeric' })}</span>
+                                <span className="book-progress">{percent}% · {book.currentPage}p</span>
+                                <span className="book-date">{formattedDate}</span>
                             </div>
                         </div>
                     );

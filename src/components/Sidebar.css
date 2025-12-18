@@ -139,72 +139,111 @@
     cursor: pointer;
 }
 
+/* Book List - Clean & Standard */
 .book-list {
     flex: 1;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
-    /* Reduced gap */
-    padding-right: 0.2rem;
+    padding: 0;
+    gap: 2px;
+    /* Tiny gap for list items */
 }
 
-/* ... (skip scrollbar) ... */
-
-.book-card {
-    padding: 0.6rem 0.8rem;
-    /* Compact padding */
+/* Book Row Item */
+.book-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    /* Space between title and meta */
+    padding: 10px 12px;
+    /* Comfortable touch target but compact visual */
     border-radius: 8px;
-    background-color: var(--bg-color);
-    border: 1px solid transparent;
+    /* Rounded corners for modern feel */
+    background-color: transparent;
     cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: none;
-    /* Cleaner look for compact list */
+    transition: background-color 0.15s ease, color 0.15s ease;
+    border-bottom: none;
+    /* Remove lines for cleaner look */
 }
 
-.book-card:hover {
-    background-color: rgba(0, 0, 0, 0.02);
+.book-row:hover {
+    background-color: rgba(0, 0, 0, 0.04);
 }
 
-.book-card.active {
-    background-color: rgba(100, 108, 255, 0.08);
-    border-color: transparent;
-    /* box-shadow removed for flat design */
-    color: var(--primary-color);
+.book-row.active {
+    background-color: var(--primary-color);
+    /* Primary block selection */
+    color: white;
+    /* White text on selection */
 }
 
-.book-card-title {
-    font-weight: 600;
+[data-theme='dark'] .book-row.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Internal Layout */
+.book-row-main {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.book-title {
     font-size: 0.9rem;
-    margin-bottom: 0.2rem;
-    color: inherit;
-    /* Inherit color for active state */
+    font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.2;
+    color: inherit;
 }
 
-.book-card-meta {
-    font-size: 0.75rem;
-    color: var(--text-color);
-    opacity: 0.6;
+.book-row-sub {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    font-size: 0.75rem;
+    color: var(--text-color);
+    opacity: 0.6;
 }
 
-/* DataManagement overrides for header integration */
-.settings-btn {
-    width: 32px;
-    height: 32px;
-    justify-content: center;
-    border: 1px solid transparent;
-    padding: 0;
-    font-size: 1rem;
+/* Adjust meta color when active */
+.book-row.active .book-row-sub {
+    color: rgba(255, 255, 255, 0.85);
+    /* Light text on active blue bg */
+    opacity: 1;
 }
 
-.settings-btn:hover {
-    background-color: rgba(100, 108, 255, 0.1);
-    color: var(--primary-color);
+.book-progress {
+    font-variant-numeric: tabular-nums;
+}
+
+.book-date {
+    font-size: 0.7rem;
+    opacity: 0.8;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 2rem 0;
+    color: var(--text-color);
+    opacity: 0.4;
+    font-size: 0.85rem;
+}
+
+/* Scrollbar refinement */
+.book-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.book-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.book-list::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
 }
