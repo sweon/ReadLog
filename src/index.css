@@ -108,12 +108,25 @@ button:focus-visible {
 @media (max-width: 768px) {
   .app-container {
     flex-direction: column;
+    height: auto;
+    overflow: visible;
   }
 
   .sidebar {
     width: 100%;
-    height: 40%;
+    height: auto;
+    flex: none;
+    /* Don't grow/shrink, let content decide height */
     border-right: none;
     border-bottom: 1px solid var(--border-color);
+    max-height: 50vh;
+    /* Optional constraint to keep it manageable */
+  }
+
+  .main-content {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    padding: 1rem;
   }
 }
