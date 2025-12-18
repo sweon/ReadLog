@@ -85,17 +85,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
 
     return (
         <div className="sidebar">
-            <div className="sidebar-header">
-                <div className="logo-section">
-                    <h2>ReadLog</h2>
-                    <div className="header-actions">
-                        <button
-                            className={`icon-btn ${isAdding ? 'active' : ''}`}
-                            onClick={() => setIsAdding(!isAdding)}
-                            title="Add New Book"
-                        >
-                            +
-                        </button>
+            <div className="logo-section">
+                <h2>ReadLog</h2>
+                <div className="header-actions">
+                    <button
+                        className={`icon-btn add-btn ${isAdding ? 'active' : ''}`}
+                        onClick={() => setIsAdding(!isAdding)}
+                        title="Add New Book"
+                    >
+                        + Add
+                    </button>
+                    <div className="right-actions">
                         <DataManagement />
                         <button
                             className="icon-btn"
@@ -107,30 +107,33 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                     </div>
                 </div>
             </div>
+        </div>
 
-            {isAdding && (
-                <form onSubmit={handleAddBook} className="add-book-form">
-                    <input
-                        className="input-field"
-                        type="text"
-                        placeholder="Book Title"
-                        value={newTitle}
-                        onChange={e => setNewTitle(e.target.value)}
-                        required
-                        autoFocus
-                    />
-                    <input
-                        className="input-field"
-                        type="number"
-                        placeholder="Total Pages"
-                        value={newTotalPages}
-                        onChange={e => setNewTotalPages(e.target.value)}
-                        required
-                        min="1"
-                    />
-                    <button type="submit" className="primary-action-btn">List Book</button>
-                </form>
-            )}
+            {
+        isAdding && (
+            <form onSubmit={handleAddBook} className="add-book-form">
+                <input
+                    className="input-field"
+                    type="text"
+                    placeholder="Book Title"
+                    value={newTitle}
+                    onChange={e => setNewTitle(e.target.value)}
+                    required
+                    autoFocus
+                />
+                <input
+                    className="input-field"
+                    type="number"
+                    placeholder="Total Pages"
+                    value={newTotalPages}
+                    onChange={e => setNewTotalPages(e.target.value)}
+                    required
+                    min="1"
+                />
+                <button type="submit" className="primary-action-btn">List Book</button>
+            </form>
+        )
+    }
 
             <div className="controls">
                 <input
@@ -156,16 +159,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                             <div className="book-row-main">
                                 <div className="book-title">{book.title}</div>
                             </div>
-                            <div className="book-row-sub" style={{ justifyContent: 'flex-start', gap: '0.4rem' }}>
-                                <span>{book.currentPage}/{book.totalPages}p ({percent}%)</span>
-                                <span style={{ opacity: 0.3 }}>|</span>
-                                <span>{new Date(book.lastReadDate).toLocaleDateString(undefined, { year: '2-digit', month: 'numeric', day: 'numeric' })}</span>
+                            <div className="book-row-sub">
+                                <span className="book-progress">{book.currentPage}/{book.totalPages}p ({percent}%)</span>
+                                <span className="book-date">{new Date(book.lastReadDate).toLocaleDateString(undefined, { year: '2-digit', month: 'numeric', day: 'numeric' })}</span>
                             </div>
                         </div>
                     );
                 })}
                 {books?.length === 0 && <div className="empty-state">No books. Click + to add.</div>}
             </div>
-        </div>
+        </div >
     );
 };
