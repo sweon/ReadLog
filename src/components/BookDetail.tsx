@@ -178,7 +178,7 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId }) => {
                                 type="number"
                                 value={pageInput}
                                 onChange={(e) => setPageInput(e.target.value)}
-                                placeholder={`Last read: ${currentProgress}`}
+                                placeholder={`Last read: ${currentProgress} / ${book.totalPages}`}
                                 min="0"
                             />
                         </div>

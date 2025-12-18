@@ -170,7 +170,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                                 <div className="book-title">{book.title}</div>
                             </div>
                             <div className="book-row-sub">
-                                <span className="book-progress">{percent}% · {book.currentPage}p</span>
+                                <span className="book-progress">{percent}% · {book.currentPage} / {book.totalPages}p</span>
                                 <span className="book-date">{formattedDate}</span>
                             </div>
                         </div>
