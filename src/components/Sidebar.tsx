@@ -76,7 +76,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
     };
 
     return (
-    return (
+
         <div className="sidebar">
             <div className="sidebar-header">
                 <div className="logo-section">
