@@ -103,29 +103,13 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId }) => {
 
     return (
         <div className="book-detail">
-            {/* Header */}
+            {/* Header / Title */}
             <div className="book-header">
                 <h1>{book.title}</h1>
-                <div className="stats-grid">
-                    <div className="stat-card">
-                        <div className="stat-value">{percentComplete}%</div>
-                        <div className="stat-label">Complete</div>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-value">{currentProgress} / {book.totalPages}</div>
-                        <div className="stat-label">Pages Read</div>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-value">{logs.length}</div>
-                        <div className="stat-label">Sessions</div>
-                    </div>
-                </div>
             </div>
 
             {/* Progress Chart */}
             <div className="progress-section" ref={chartRef}>
-                <h3>Reading Progress</h3>
-                <button className="export-btn" onClick={exportChart}>📷 Save Image</button>
                 <div className="chart-container">
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
@@ -162,8 +146,27 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId }) => {
                         </ComposedChart>
                     </ResponsiveContainer>
                 </div>
-                <div style={{ textAlign: 'right', marginTop: '10px', fontSize: '0.8rem', opacity: 0.7 }}>
-                    {format(new Date(), 'PPP p')}
+                <div className="chart-footer">
+                    <button className="export-btn" onClick={exportChart}>📷 Save Image</button>
+                    <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>
+                        {format(new Date(), 'PPP p')}
+                    </div>
+                </div>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="stats-grid">
+                <div className="stat-card">
+                    <div className="stat-value">{percentComplete}%</div>
+                    <div className="stat-label">Complete</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-value">{currentProgress} / {book.totalPages}</div>
+                    <div className="stat-label">Pages Read</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-value">{logs.length}</div>
+                    <div className="stat-label">Sessions</div>
                 </div>
             </div>
 
