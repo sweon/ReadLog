@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
 import { DataManagement } from './DataManagement';
 import './DataManagement.css';
+import './Sidebar.css';
 
 interface SidebarProps {
     onSelectBook: (bookId: number | null) => void;
@@ -77,22 +78,33 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
     return (
         <div className="sidebar">
             <div className="sidebar-header">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                <div className="logo-section">
                     <h2>ReadLog</h2>
                 </div>
-                <button onClick={() => setIsAdding(!isAdding)}>{isAdding ? 'Cancel' : '+ New Book'}</button>
+                {!isAdding ? (
+                    <button className="add-book-btn" onClick={() => setIsAdding(true)}>
+                        + New Book
+                    </button>
+                ) : (
+                    <button className="add-book-btn" onClick={() => setIsAdding(false)}>
+                        Cancel
+                    </button>
+                )}
             </div>
 
             {isAdding && (
                 <form onSubmit={handleAddBook} className="add-book-form">
                     <input
+                        className="input-field"
                         type="text"
                         placeholder="Book Title"
                         value={newTitle}
                         onChange={e => setNewTitle(e.target.value)}
                         required
+                        autoFocus
                     />
                     <input
+                        className="input-field"
                         type="number"
                         placeholder="Total Pages"
                         value={newTotalPages}
@@ -100,22 +112,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                         required
                         min="1"
                     />
-                    <button type="submit">Add</button>
+                    <button type="submit" className="primary-action-btn">List Book</button>
                 </form>
             )}
 
             <div className="controls">
                 <input
+                    className="search-input"
                     type="text"
-                    placeholder="Search books..."
+                    placeholder="Search library..."
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
-                <select value={sort} onChange={e => setSort(e.target.value as SortOption)}>
+                <select
+                    className="sort-select"
+                    value={sort}
+                    onChange={e => setSort(e.target.value as SortOption)}
+                >
                     <option value="date-desc">Newest First</option>
                     <option value="date-asc">Oldest First</option>
-                    <option value="title">Title</option>
-                    <option value="last-read">Last Read</option>
+                    <option value="title">Title (A-Z)</option>
+                    <option value="last-read">Recently Read</option>
                 </select>
             </div>
 
@@ -123,37 +140,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                 {books?.map(book => (
                     <div
                         key={book.id}
-                        className={`book-item ${selectedBookId === book.id ? 'active' : ''}`}
+                        className={`book-card ${selectedBookId === book.id ? 'active' : ''}`}
                         onClick={() => onSelectBook(book.id!)}
                     >
-                        <div className="book-title">{book.title}</div>
-                        <div className="book-meta">
-                            {/* Calculate progress here or use a helper */}
-                            <span>{new Date(book.lastReadDate).toLocaleDateString()}</span>
+                        <div className="book-card-title">{book.title}</div>
+                        <div className="book-card-meta">
+                            <span>{book.totalPages} pages</span>
+                            <span>{new Date(book.lastReadDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                         </div>
                     </div>
                 ))}
-                {books?.length === 0 && <div className="empty-state">No books found.</div>}
+                {books?.length === 0 && <div className="empty-state">No books found. Why not add one?</div>}
             </div>
-            <div style={{ marginTop: 'auto', display: 'flex', gap: '0.5rem', padding: '0.5rem 0' }}>
-                <div style={{ flex: 1 }}>
+
+            <div className="sidebar-footer">
+                <div className="footer-btn-wrapper">
                     <DataManagement />
                 </div>
                 <button
+                    className="theme-toggle-btn"
                     onClick={toggleTheme}
-                    style={{
-                        padding: '0.5rem',
-                        fontSize: '1.2rem',
-                        background: 'none',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: '40px'
-                    }}
-                    title="Toggle Theme"
+                    title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
                 >
                     {theme === 'light' ? '🌙' : '☀️'}
                 </button>
