@@ -87,7 +87,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
         <div className="sidebar">
             <div className="sidebar-header">
                 <div className="logo-section">
-                    <h2>ReadLog</h2>
+
                     <div className="header-actions">
                         <button
                             className={`icon-btn add-btn ${isAdding ? 'active' : ''}`}
