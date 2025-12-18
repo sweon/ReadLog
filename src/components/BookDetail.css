@@ -27,20 +27,20 @@
 
 .stat-card {
     background: var(--sidebar-bg);
-    padding: 0.5rem;
+    padding: 0.4rem;
     border-radius: 8px;
     box-shadow: var(--shadow-sm);
     text-align: center;
 }
 
 .stat-value {
-    font-size: 1.1rem;
+    font-size: 1.0rem;
     font-weight: bold;
     color: var(--primary-color);
 }
 
 .stat-label {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--text-color);
     opacity: 0.8;
 }
