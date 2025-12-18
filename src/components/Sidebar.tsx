@@ -19,33 +19,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
     const [sort, setSort] = useState<SortOption>('date-desc');
     const [isAdding, setIsAdding] = useState(false);
 
-    // ... (keep existing lines)
-
-    return (
-        // ...
-        <div className="controls">
-            <input
-                className="search-input"
-                type="text"
-                placeholder="Search..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-            />
-            <div className="sort-wrapper">
-                <select
-                    className="sort-select"
-                    value={sort}
-                    onChange={e => setSort(e.target.value as SortOption)}
-                    title="Sort Books"
-                >
-                    <option value="date-desc">Newest</option>
-                    <option value="date-asc">Oldest</option>
-                    <option value="title">A-Z</option>
-                    <option value="last-read">Recent</option>
-                </select>
-            </div>
-        </div>
-
     // New Book Form State
     const [newTitle, setNewTitle] = useState('');
     const [newTotalPages, setNewTotalPages] = useState('');
@@ -137,31 +110,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                 </div>
             </div>
 
-            {
-                isAdding && (
-                    <form onSubmit={handleAddBook} className="add-book-form">
-                        <input
-                            className="input-field"
-                            type="text"
-                            placeholder="Book Title"
-                            value={newTitle}
-                            onChange={e => setNewTitle(e.target.value)}
-                            required
-                            autoFocus
-                        />
-                        <input
-                            className="input-field"
-                            type="number"
-                            placeholder="Total Pages"
-                            value={newTotalPages}
-                            onChange={e => setNewTotalPages(e.target.value)}
-                            required
-                            min="1"
-                        />
-                        <button type="submit" className="primary-action-btn">List Book</button>
-                    </form>
-                )
-            }
+            {isAdding && (
+                <form onSubmit={handleAddBook} className="add-book-form">
+                    <input
+                        className="input-field"
+                        type="text"
+                        placeholder="Book Title"
+                        value={newTitle}
+                        onChange={e => setNewTitle(e.target.value)}
+                        required
+                        autoFocus
+                    />
+                    <input
+                        className="input-field"
+                        type="number"
+                        placeholder="Total Pages"
+                        value={newTotalPages}
+                        onChange={e => setNewTotalPages(e.target.value)}
+                        required
+                        min="1"
+                    />
+                    <button type="submit" className="primary-action-btn">List Book</button>
+                </form>
+            )}
 
             <div className="controls">
                 <input
@@ -171,8 +142,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
-                {/* Removed Sort for extreme compactness if desired, but user didn't ask to remove. kept for function. */}
-                {/* For max compactness, maybe just search is enough? Keeping sort for now but styling it small. */}
+                <div className="sort-wrapper">
+                    <select
+                        className="sort-select"
+                        value={sort}
+                        onChange={e => setSort(e.target.value as SortOption)}
+                        title="Sort Books"
+                    >
+                        <option value="date-desc">Newest</option>
+                        <option value="date-asc">Oldest</option>
+                        <option value="title">A-Z</option>
+                        <option value="last-read">Recent</option>
+                    </select>
+                </div>
             </div>
 
             <div className="book-list unified-list">
@@ -196,6 +178,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                 })}
                 {books?.length === 0 && <div className="empty-state">No books. Click + to add.</div>}
             </div>
-        </div >
+        </div>
     );
 };
