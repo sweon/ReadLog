@@ -155,13 +155,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                         >
                             <div className="book-row-main">
                                 <div className="book-title">{book.title}</div>
-                                <div className="book-date">
-                                    {new Date(book.lastReadDate).toLocaleDateString(undefined, { year: 'numeric', month: 'numeric', day: 'numeric' })}
-                                </div>
                             </div>
-                            <div className="book-row-sub">
-                                <span>{book.currentPage} / {book.totalPages} p</span>
-                                <span className="book-percent">{percent}%</span>
+                            <div className="book-row-sub" style={{ justifyContent: 'flex-start', gap: '0.4rem' }}>
+                                <span>{book.currentPage}/{book.totalPages}p ({percent}%)</span>
+                                <span style={{ opacity: 0.3 }}>|</span>
+                                <span>{new Date(book.lastReadDate).toLocaleDateString(undefined, { year: '2-digit', month: 'numeric', day: 'numeric' })}</span>
                             </div>
                         </div>
                     );
