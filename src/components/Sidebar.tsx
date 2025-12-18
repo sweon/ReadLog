@@ -85,55 +85,56 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
 
     return (
         <div className="sidebar">
-            <div className="logo-section">
-                <h2>ReadLog</h2>
-                <div className="header-actions">
-                    <button
-                        className={`icon-btn add-btn ${isAdding ? 'active' : ''}`}
-                        onClick={() => setIsAdding(!isAdding)}
-                        title="Add New Book"
-                    >
-                        + Add
-                    </button>
-                    <div className="right-actions">
-                        <DataManagement />
+            <div className="sidebar-header">
+                <div className="logo-section">
+                    <h2>ReadLog</h2>
+                    <div className="header-actions">
                         <button
-                            className="icon-btn"
-                            onClick={toggleTheme}
-                            title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+                            className={`icon-btn add-btn ${isAdding ? 'active' : ''}`}
+                            onClick={() => setIsAdding(!isAdding)}
+                            title="Add New Book"
                         >
-                            {theme === 'light' ? '🌙' : '☀️'}
+                            + Add
                         </button>
+                        <div className="right-actions">
+                            <DataManagement />
+                            <button
+                                className="icon-btn"
+                                onClick={toggleTheme}
+                                title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+                            >
+                                {theme === 'light' ? '🌙' : '☀️'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
             {
-        isAdding && (
-            <form onSubmit={handleAddBook} className="add-book-form">
-                <input
-                    className="input-field"
-                    type="text"
-                    placeholder="Book Title"
-                    value={newTitle}
-                    onChange={e => setNewTitle(e.target.value)}
-                    required
-                    autoFocus
-                />
-                <input
-                    className="input-field"
-                    type="number"
-                    placeholder="Total Pages"
-                    value={newTotalPages}
-                    onChange={e => setNewTotalPages(e.target.value)}
-                    required
-                    min="1"
-                />
-                <button type="submit" className="primary-action-btn">List Book</button>
-            </form>
-        )
-    }
+                isAdding && (
+                    <form onSubmit={handleAddBook} className="add-book-form">
+                        <input
+                            className="input-field"
+                            type="text"
+                            placeholder="Book Title"
+                            value={newTitle}
+                            onChange={e => setNewTitle(e.target.value)}
+                            required
+                            autoFocus
+                        />
+                        <input
+                            className="input-field"
+                            type="number"
+                            placeholder="Total Pages"
+                            value={newTotalPages}
+                            onChange={e => setNewTotalPages(e.target.value)}
+                            required
+                            min="1"
+                        />
+                        <button type="submit" className="primary-action-btn">List Book</button>
+                    </form>
+                )
+            }
 
             <div className="controls">
                 <input
