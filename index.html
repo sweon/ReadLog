@@ -6,26 +6,11 @@
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>read-log</title>
-  <script>
-    window.addEventListener('error', function (e) {
-      var root = document.getElementById('root');
-      var msg = '';
-      if (e.target && (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK')) {
-        msg = 'Resource failed to load: ' + (e.target.src || e.target.href);
-      } else {
-        msg = e.message;
-      }
-      if (root) {
-        root.innerHTML = '<div style="color:red; padding:20px;"><h3>⚠️ Start Error</h3><p>' + msg + '</p></div>';
-      }
-    }, true);
-  </script>
+
 </head>
 
 <body>
-  <div id="root">
-    <div style="padding: 20px;">Loading ReadLog... (If this persists, something is broken)</div>
-  </div>
+  <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 
