@@ -27,13 +27,13 @@ function App() {
       <Sidebar
         onSelectBook={setSelectedBookId}
         selectedBookId={selectedBookId}
+        theme={theme}
+        toggleTheme={toggleTheme}
       />
 
       <main className="main-content">
         <header className="top-bar">
-          <button onClick={toggleTheme} className="theme-toggle">
-            {theme === 'light' ? '🌙' : '☀️'}
-          </button>
+          {/* Theme toggle moved to Sidebar */}
         </header>
 
         {selectedBookId ? (

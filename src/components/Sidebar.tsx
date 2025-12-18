@@ -7,11 +7,13 @@ import './DataManagement.css';
 interface SidebarProps {
     onSelectBook: (bookId: number | null) => void;
     selectedBookId: number | null;
+    theme: 'light' | 'dark';
+    toggleTheme: () => void;
 }
 
 type SortOption = 'date-desc' | 'date-asc' | 'title' | 'last-read';
 
-export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, theme, toggleTheme }) => {
     const [search, setSearch] = useState('');
     const [sort, setSort] = useState<SortOption>('date-desc');
     const [isAdding, setIsAdding] = useState(false);
@@ -75,7 +77,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId }
     return (
         <div className="sidebar">
             <div className="sidebar-header">
-                <h2>ReadLog</h2>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <h2>ReadLog</h2>
+                    <button onClick={toggleTheme} style={{ padding: '0.4rem', fontSize: '1.2rem', background: 'none', border: 'none' }}>
+                        {theme === 'light' ? '🌙' : '☀️'}
+                    </button>
+                </div>
                 <button onClick={() => setIsAdding(!isAdding)}>{isAdding ? 'Cancel' : '+ New Book'}</button>
             </div>
 
