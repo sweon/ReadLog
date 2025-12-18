@@ -127,7 +127,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                         required
                         min="1"
                     />
-                    <button type="submit" className="primary-action-btn">List Book</button>
+                    <div className="form-actions">
+                        <button type="button" className="sidebar-action-btn secondary" onClick={() => setIsAdding(false)}>Cancel</button>
+                        <button type="submit" className="sidebar-action-btn primary">Add</button>
+                    </div>
                 </form>
             )}
 

@@ -115,7 +115,7 @@ export const DataManagement: React.FC = () => {
     if (!isOpen) {
         return (
             <button className="settings-btn" onClick={() => setIsOpen(true)} title="Manage Data">
-                ⚙️ Data Sync
+                ⚙️
             </button>
         );
     }
