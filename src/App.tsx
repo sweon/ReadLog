@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { BookDetail } from './components/BookDetail';
-import { DataManagement } from './components/DataManagement';
-import './components/DataManagement.css'; // Import styles for DataManagement
 import './App.css';
 
 function App() {
@@ -35,7 +33,7 @@ function App() {
 
       <main className="main-content">
         <header className="top-bar">
-          <DataManagement />
+          {/* Theme toggle moved to Sidebar */}
         </header>
 
         {selectedBookId ? (

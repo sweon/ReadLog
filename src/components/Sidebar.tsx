@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
-
+import { DataManagement } from './DataManagement';
+import './DataManagement.css';
 
 interface SidebarProps {
     onSelectBook: (bookId: number | null) => void;
@@ -137,7 +138,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                 ))}
                 {books?.length === 0 && <div className="empty-state">No books found.</div>}
             </div>
-
+            <DataManagement />
         </div>
     );
 };
