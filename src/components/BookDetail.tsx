@@ -108,8 +108,44 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete }) => {
         }
     };
 
-    const formatDate = (tickItem: number) => {
-        return format(new Date(tickItem), 'MM/dd');
+    // Calculate ticks for clearer date display
+    const ticks = (() => {
+        if (chartData.length <= 6) return chartData.map(d => d.date);
+
+        // Always include start and end
+        const start = chartData[0].date;
+        const end = chartData[chartData.length - 1].date;
+        const middlePoints = [
+            chartData[Math.floor(chartData.length * 0.2)].date,
+            chartData[Math.floor(chartData.length * 0.4)].date,
+            chartData[Math.floor(chartData.length * 0.6)].date,
+            chartData[Math.floor(chartData.length * 0.8)].date,
+        ];
+        // Deduplicate and sort
+        return Array.from(new Set([start, ...middlePoints, end])).sort((a, b) => a - b);
+    })();
+
+    const formatXAxis = (tickItem: number, index: number) => {
+        const date = new Date(tickItem);
+        // If it's the first tick, show year
+        if (index === 0) return format(date, 'yyyy.MM.dd');
+
+        // Compare with previous tick to see if year changed
+        // Note: index corresponds to the tick array provided to XAxis (ticks prop)
+        // However, formatter index might be relative to rendered ticks.
+        // Safer way: Use the raw tick value comparison if possible, or simpler logic:
+        // Since we are passed the tick value, we can't easily access "previous" tick value in standard generic formatter without closure.
+        // But we computed `ticks` array above. We can find the index in that array.
+
+        const tickIndex = ticks.indexOf(tickItem);
+        if (tickIndex > 0) {
+            const prevDate = new Date(ticks[tickIndex - 1]);
+            if (prevDate.getFullYear() !== date.getFullYear()) {
+                return format(date, 'yyyy.MM.dd');
+            }
+        }
+
+        return format(date, 'MM.dd');
     };
 
     return (
@@ -124,19 +160,23 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete }) => {
                 <div className="progress-section">
                     <div className="chart-container">
                         <ResponsiveContainer width="100%" height="100%">
-                            <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                            <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 10, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                                 <XAxis
                                     dataKey="date"
-                                    domain={['auto', 'auto']}
-                                    tickFormatter={formatDate}
+                                    domain={['dataMin', 'dataMax']}
+                                    ticks={ticks}
+                                    tickFormatter={formatXAxis}
                                     type="number"
                                     scale="time"
                                     stroke="var(--text-color)"
+                                    tick={{ fontSize: 11 }}
                                 />
                                 <YAxis
                                     domain={[0, book.totalPages]}
                                     stroke="var(--text-color)"
+                                    tick={{ fontSize: 11 }}
+                                    width={30}
                                 />
                                 <Tooltip
                                     labelFormatter={(label) => format(new Date(label), 'PPP p')}
