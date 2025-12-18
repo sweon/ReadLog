@@ -5,9 +5,19 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>read-log</title>
+    <script>
+      window.onerror = function(message, source, lineno, colno, error) {
+        var root = document.getElementById('root');
+        if (root) {
+          root.innerHTML = '<div style="color:red; padding:20px;"><h3>⚠️ Error</h3><p>' + message + '</p><p>' + source + ':' + lineno + '</p></div>';
+        }
+      };
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div style="padding: 20px;">Loading ReadLog... (If this persists, something is broken)</div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
