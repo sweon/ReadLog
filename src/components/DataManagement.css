@@ -1,9 +1,14 @@
 .settings-btn {
-    margin-top: auto;
     background: none;
     border: 1px solid var(--border-color);
     color: var(--text-color);
-    width: 100%;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .modal-overlay {
