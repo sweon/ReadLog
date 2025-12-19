@@ -30,3 +30,31 @@ export class ReadLogDatabase extends Dexie {
 }
 
 export const db = new ReadLogDatabase();
+
+export const exportDB = async () => {
+    const books = await db.books.toArray();
+    const logs = await db.logs.toArray();
+    return JSON.stringify({ books, logs });
+};
+
+export const importDB = async (json: string) => {
+    const data = JSON.parse(json);
+    await db.transaction('rw', db.books, db.logs, async () => {
+        await db.books.clear();
+        await db.logs.clear();
+        await db.books.bulkAdd(data.books);
+        await db.logs.bulkAdd(data.logs.map((log: any) => ({
+            ...log,
+            date: new Date(log.date)
+        })));
+
+        // Data in books also needs date restoration
+        const books = await db.books.toArray();
+        for (const book of books) {
+            await db.books.update(book.id!, {
+                startDate: new Date(book.startDate),
+                lastReadDate: new Date(book.lastReadDate)
+            });
+        }
+    });
+};

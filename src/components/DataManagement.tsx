@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { db, type Book, type Log } from '../db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { format } from 'date-fns';
+import { SyncModal } from './SyncModal';
 
 export const DataManagement: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const [showSync, setShowSync] = useState(false);
     const [view, setView] = useState<'main' | 'export' | 'import'>('main');
     const [selectedBooks, setSelectedBooks] = useState<number[]>([]);
 
@@ -111,6 +113,11 @@ export const DataManagement: React.FC = () => {
         reader.readAsText(file);
     };
 
+
+
+    // ... (existing import)
+    // ...
+
     // UI rendering
     if (!isOpen) {
         return (
@@ -122,6 +129,8 @@ export const DataManagement: React.FC = () => {
 
     return (
         <div className="modal-overlay">
+            {showSync && <SyncModal onClose={() => setShowSync(false)} />}
+
             <div className="modal-content data-modal">
                 <div className="modal-header">
                     <h3>Data Management</h3>
@@ -159,10 +168,16 @@ export const DataManagement: React.FC = () => {
                                         <h4>Restore Data</h4>
                                         <p>Import logs from a previous backup.</p>
                                     </div>
+                                    <div className="action-card" onClick={() => setShowSync(true)}>
+                                        <div className="icon">🔄</div>
+                                        <h4>Sync Devices</h4>
+                                        <p>Transfer data via QR Code.</p>
+                                    </div>
                                 </div>
                             </div>
                         )}
 
+                        {/* ... export/import tabs ... */}
                         {view === 'export' && (
                             <div className="tab-content export-tab">
                                 <div className="section-header">
