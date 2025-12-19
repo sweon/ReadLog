@@ -265,6 +265,11 @@
     color: inherit;
 }
 
+.book-row:active .book-title {
+    white-space: normal;
+    overflow: visible;
+}
+
 .book-row-sub {
     display: flex;
     justify-content: space-between;

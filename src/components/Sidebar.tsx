@@ -181,7 +181,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                             onClick={() => onSelectBook(book.id!)}
                         >
                             <div className="book-row-main">
-                                <div className="book-title">{book.title}</div>
+                                <div className="book-title" title={book.title}>{book.title}</div>
                             </div>
                             <div className="book-row-sub">
                                 <span className="book-progress">{percent}% · {book.currentPage} / {book.totalPages}p</span>
