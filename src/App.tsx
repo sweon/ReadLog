@@ -3,8 +3,6 @@ import { Sidebar } from './components/Sidebar';
 import { BookDetail } from './components/BookDetail';
 import './App.css';
 
-import { migrateCurrentPage } from './db';
-
 function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [selectedBookId, setSelectedBookId] = useState<number | null>(null);
@@ -15,9 +13,6 @@ function App() {
     const items = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     setTheme(items);
     document.documentElement.setAttribute('data-theme', items);
-
-    // Run optimization migration
-    migrateCurrentPage();
   }, []);
 
   const toggleTheme = () => {

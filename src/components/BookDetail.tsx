@@ -76,8 +76,7 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete }) => {
 
             await db.books.update(book.id!, {
                 lastReadDate: new Date(),
-                status: newPage === book.totalPages ? 'completed' : 'reading',
-                currentPage: newPage
+                status: newPage === book.totalPages ? 'completed' : 'reading'
             });
         });
 

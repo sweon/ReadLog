@@ -51,9 +51,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                 break;
         }
 
-        // Optimization: "currentPage" is now directly on the book object.
-        // No need for separate log queries (N+1 removal).
-        return result;
+        // Enrich with progress data (N+1 query but acceptable for sidebar)
+        const enriched = await Promise.all(result.map(async (book) => {
+            const lastLog = await db.logs.where('bookId').equals(book.id!).reverse().sortBy('date').then(logs => logs[0]);
+            const currentPage = lastLog ? lastLog.page : 0;
+            return { ...book, currentPage };
+        }));
+
+        return enriched;
     }, [search, sort]);
 
     const handleAddBook = async (e: React.FormEvent) => {
@@ -66,8 +71,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                 totalPages: parseInt(newTotalPages),
                 startDate: new Date(),
                 lastReadDate: new Date(),
-                status: 'reading',
-                currentPage: 0 // Initialize progress
+                status: 'reading'
             });
             setNewTitle('');
             setNewTotalPages('');
