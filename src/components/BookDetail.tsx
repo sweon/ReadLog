@@ -165,6 +165,7 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete }) => {
                                     fill="var(--primary-color)"
                                     fillOpacity={0.1}
                                     strokeWidth={2}
+                                    tooltipType="none"
                                 />
                                 <Line type="monotone" dataKey="page" stroke="var(--primary-color)" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
                             </ComposedChart>
