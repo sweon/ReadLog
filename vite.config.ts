@@ -29,5 +29,5 @@ export default defineConfig({
       }
     })
   ],
-  base: './', // Use relative base path for GitHub Pages compatibility
+  base: '/ReadLog/', // Base path for GitHub Pages deployment
 });
