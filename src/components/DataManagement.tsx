@@ -138,11 +138,7 @@ export const DataManagement: React.FC = () => {
                 </div>
 
                 <div className="modal-body">
-                    <div className="tabs">
-                        <button className={view === 'main' ? 'active' : ''} onClick={() => setView('main')}>Overview</button>
-                        <button className={view === 'export' ? 'active' : ''} onClick={() => setView('export')}>Export</button>
-                        <button className={view === 'import' ? 'active' : ''} onClick={() => setView('import')}>Import</button>
-                    </div>
+
 
                     <div className="tab-content-container">
                         {view === 'main' && (
@@ -177,6 +173,7 @@ export const DataManagement: React.FC = () => {
                         {view === 'export' && (
                             <div className="tab-content export-tab">
                                 <div className="section-header">
+                                    <button className="back-btn" onClick={() => setView('main')}>← Back</button>
                                     <h4>Select Books</h4>
                                     <button className="text-btn" onClick={() => setSelectedBooks([])}>Clear All</button>
                                 </div>
@@ -217,6 +214,10 @@ export const DataManagement: React.FC = () => {
 
                         {view === 'import' && (
                             <div className="tab-content import-tab">
+                                <div className="section-header">
+                                    <button className="back-btn" onClick={() => setView('main')}>← Back</button>
+                                    <h4>Import Data</h4>
+                                </div>
                                 <div className="upload-area">
                                     <div className="upload-icon">📂</div>
                                     <h4>Select Backup File</h4>
