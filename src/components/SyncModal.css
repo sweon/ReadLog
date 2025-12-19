@@ -106,4 +106,91 @@
 #reader {
     width: 100%;
     max-width: 300px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Recent Peers Styles */
+.receive-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.known-peers {
+    width: 100%;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.known-peers h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.peer-btn {
+    width: 100%;
+    padding: 1rem;
+    background: var(--bg-hover);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+    font-weight: 500;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+}
+
+.peer-btn::before {
+    content: '📱';
+    margin-right: 10px;
+    filter: grayscale(1);
+}
+
+.peer-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.peer-btn:hover::before {
+    filter: none;
+}
+
+.divider {
+    text-align: center;
+    font-size: 0.8rem;
+    opacity: 0.5;
+    margin: 0.5rem 0;
+    position: relative;
+    width: 100%;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 35%;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.divider::before {
+    left: 0;
+}
+
+.divider::after {
+    right: 0;
 }
