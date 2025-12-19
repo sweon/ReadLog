@@ -152,9 +152,10 @@ export const DataManagement: React.FC = () => {
                                         <span className="count">{books?.length || 0}</span>
                                         <span className="label">Total Books</span>
                                     </div>
-                                    <div className="stat-box">
-                                        <span className="count">v1.0</span>
-                                        <span className="label">Schema</span>
+                                    <div className="action-card" onClick={() => setShowSync(true)}>
+                                        <div className="icon">🔄</div>
+                                        <h4>Sync Devices</h4>
+                                        <p>Transfer data via QR Code.</p>
                                     </div>
                                 </div>
                                 <div className="action-cards">
@@ -167,11 +168,6 @@ export const DataManagement: React.FC = () => {
                                         <div className="icon">📥</div>
                                         <h4>Restore Data</h4>
                                         <p>Import logs from a previous backup.</p>
-                                    </div>
-                                    <div className="action-card" onClick={() => setShowSync(true)}>
-                                        <div className="icon">🔄</div>
-                                        <h4>Sync Devices</h4>
-                                        <p>Transfer data via QR Code.</p>
                                     </div>
                                 </div>
                             </div>
