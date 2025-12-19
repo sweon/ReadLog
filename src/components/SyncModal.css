@@ -110,6 +110,60 @@
     overflow: hidden;
 }
 
+/* Manual Input Styles */
+.manual-input-group {
+    width: 100%;
+    margin: 1rem 0;
+    text-align: left;
+}
+
+.join-group {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+}
+
+.sub-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.input-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.input-row input {
+    flex: 1;
+    padding: 0.8rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.input-row input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background: var(--bg-color);
+}
+
+.input-row button {
+    padding: 0 1.2rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.input-row button:hover {
+    opacity: 0.9;
+}
+
 /* Recent Peers Styles */
 .receive-container {
     width: 100%;

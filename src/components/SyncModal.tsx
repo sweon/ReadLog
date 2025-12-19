@@ -15,43 +15,34 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
     const [peerId, setPeerId] = useState('');
     const [progress, setProgress] = useState(0);
     const [knownPeers, setKnownPeers] = useState<string[]>([]);
+    const [customRoomId, setCustomRoomId] = useState('');
+    const [targetRoomId, setTargetRoomId] = useState('');
     const peerRef = useRef<Peer | null>(null);
 
-    useEffect(() => {
-        // Load known peers
-        const savedPeers = localStorage.getItem('readlog_known_peers');
-        if (savedPeers) {
-            setKnownPeers(JSON.parse(savedPeers));
+    const initPeer = (id?: string) => {
+        if (peerRef.current) {
+            peerRef.current.destroy();
         }
 
-        // Initialize Peer with persistent ID if possible
-        let myId = localStorage.getItem('readlog_peer_id');
+        let myId = id;
         if (!myId) {
-            myId = crypto.randomUUID().substring(0, 8);
-            localStorage.setItem('readlog_peer_id', myId);
+            myId = localStorage.getItem('readlog_peer_id') || crypto.randomUUID().substring(0, 8);
         }
 
         const peer = new Peer(myId);
         peerRef.current = peer;
 
-        peer.on('open', (id) => {
-            setPeerId(id);
-            if (localStorage.getItem('readlog_peer_id') !== id) {
-                // If peerjs assigned a different ID (conflict?), save it
-                localStorage.setItem('readlog_peer_id', id);
+        peer.on('open', (newId) => {
+            setPeerId(newId);
+            if (!id) {
+                localStorage.setItem('readlog_peer_id', newId);
             }
             if (mode === 'send') {
-                setStatus('Ready. Waiting for connection...');
-            } else {
-                setStatus('Select a device or scan QR code.');
+                setStatus(id ? `Room "${id}" created!` : 'Ready. Waiting for connection...');
             }
         });
 
         peer.on('connection', (conn) => {
-            // Incoming connection (We are Host/Sender usually, but could be bidirectional later)
-            // For now, if we are in 'send' mode, we send data.
-            // If we are in 'receive' mode, we might be receiving data pushed to us.
-
             conn.on('open', async () => {
                 if (mode === 'send') {
                     setStatus('Connected! Sending data...');
@@ -61,9 +52,7 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                     setProgress(100);
                 }
             });
-
             conn.on('data', async (data) => {
-                // If we receive data, we import it regardless of mode (Auto-sync)
                 setStatus('Receiving data...');
                 if (typeof data === 'string') {
                     try {
@@ -71,10 +60,7 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                         setStatus('Success! Data synced.');
                         setProgress(100);
                         setTimeout(() => window.location.reload(), 1500);
-                    } catch (e) {
-                        setStatus('Error importing data.');
-                        console.error(e);
-                    }
+                    } catch (e) { console.error(e); }
                 }
             });
         });
@@ -82,15 +68,38 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
         peer.on('error', (err) => {
             console.error(err);
             setStatus(`Error: ${err.type}`);
+            if (err.type === 'unavailable-id') {
+                setStatus(`Room "${myId}" is already taken.`);
+            }
         });
+    };
+
+    useEffect(() => {
+        // Load known peers
+        const savedPeers = localStorage.getItem('readlog_known_peers');
+        if (savedPeers) {
+            setKnownPeers(JSON.parse(savedPeers));
+        }
+
+        // Initial setup
+        initPeer();
 
         return () => {
-            peer.destroy();
+            peerRef.current?.destroy();
         };
-    }, []); // Run once on mount
+    }, []);
 
     const connectToHost = (hostId: string) => {
+        if (!hostId) return;
+        if (!peerRef.current) {
+            initPeer();
+            // Logic continues after re-init, but initPeer is async in effect (listeners). 
+            // However, peerRef.current IS set synchronously in initPeer.
+        }
+
+        // Safety check again for TS
         if (!peerRef.current) return;
+
         setStatus(`Connecting to ${hostId}...`);
 
         const conn = peerRef.current.connect(hostId);
@@ -174,15 +183,45 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                 <div className="sync-content">
                     <p className="status-text">{status}</p>
 
-                    {mode === 'send' && peerId && (
-                        <div className="qr-container">
-                            <QRCodeCanvas value={peerId} size={180} />
-                            <p className="peer-id-text">My ID: <strong>{peerId}</strong></p>
+                    {mode === 'send' && (
+                        <div className="host-container">
+                            {peerId && (
+                                <div className="qr-container">
+                                    <QRCodeCanvas value={peerId} size={160} />
+                                    <p className="peer-id-text">Room ID: <strong>{peerId}</strong></p>
+                                </div>
+                            )}
+                            <div className="manual-input-group">
+                                <p className="sub-label">Or set a custom Room ID:</p>
+                                <div className="input-row">
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. my-room"
+                                        value={customRoomId}
+                                        onChange={(e) => setCustomRoomId(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && initPeer(customRoomId)}
+                                    />
+                                    <button onClick={() => initPeer(customRoomId)}>Set</button>
+                                </div>
+                            </div>
                         </div>
                     )}
 
                     {mode === 'receive' && (
                         <div className="receive-container">
+                            <div className="manual-input-group join-group">
+                                <div className="input-row">
+                                    <input
+                                        type="text"
+                                        placeholder="Enter Room ID"
+                                        value={targetRoomId}
+                                        onChange={(e) => setTargetRoomId(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && connectToHost(targetRoomId)}
+                                    />
+                                    <button onClick={() => connectToHost(targetRoomId)}>Join</button>
+                                </div>
+                            </div>
+
                             {knownPeers.length > 0 && (
                                 <div className="known-peers">
                                     <h4>Recent Devices</h4>
