@@ -175,7 +175,7 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete }) => {
                             Started: {format(book.startDate, 'PPP')}
                         </div>
                         <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>
-                            Last Read: {format(book.lastReadDate, 'PPP')}
+                            Last Read: {format(book.lastReadDate, 'PPP p')}
                         </div>
                     </div>
                 </div>
