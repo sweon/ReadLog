@@ -20,7 +20,9 @@
     box-shadow: var(--shadow-md);
     display: flex;
     flex-direction: column;
-    min-height: 400px;
+    height: auto;
+    max-height: 85vh;
+    /* Maximum height constraint */
 }
 
 .sync-header {
@@ -75,9 +77,15 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    /* change to flex-start for scrolling content */
     gap: 1rem;
     text-align: center;
+    overflow-y: auto;
+    /* Enable vertical scrolling */
+    width: 100%;
+    padding: 0.5rem;
+    /* Padding for scrollbar spacing */
 }
 
 .qr-container {
