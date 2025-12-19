@@ -45,19 +45,19 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
         peer.on('connection', (conn) => {
             conn.on('open', async () => {
                 if (mode === 'send') {
-                    setStatus('Connected! Sending data...');
+                    setStatus('Connected! Exchanging data...');
                     const data = await exportDB();
                     conn.send(data);
-                    setStatus('Data sent!');
-                    setProgress(100);
+                    setStatus('Data sent to guest.');
+                    setProgress(50);
                 }
             });
             conn.on('data', async (data) => {
-                setStatus('Receiving data...');
+                setStatus('Receiving data from guest...');
                 if (typeof data === 'string') {
                     try {
                         await importDB(data);
-                        setStatus('Success! Data synced.');
+                        setStatus('Sync complete! Refreshing...');
                         setProgress(100);
                         setTimeout(() => window.location.reload(), 1500);
                     } catch (e) { console.error(e); }
@@ -104,23 +104,26 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
 
         const conn = peerRef.current.connect(hostId);
 
-        conn.on('open', () => {
-            setStatus('Connected! Waiting for data...');
-            // Save to known peers
+        conn.on('open', async () => {
+            setStatus('Connected! Exchanging data...');
+
+            // Bidirectional: Send my data to the host
+            const data = await exportDB();
+            conn.send(data);
+
             if (!knownPeers.includes(hostId)) {
-                const newPeers = [hostId, ...knownPeers].slice(0, 5); // Keep last 5
+                const newPeers = [hostId, ...knownPeers].slice(0, 5);
                 setKnownPeers(newPeers);
                 localStorage.setItem('readlog_known_peers', JSON.stringify(newPeers));
             }
         });
 
         conn.on('data', async (data) => {
-            // ... same import logic
             setStatus('Receiving data...');
             if (typeof data === 'string') {
                 try {
                     await importDB(data);
-                    setStatus('Success! Data synced.');
+                    setStatus('Sync complete! Refreshing...');
                     setProgress(100);
                     setTimeout(() => window.location.reload(), 1500);
                 } catch (e) {
