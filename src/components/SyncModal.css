@@ -111,6 +111,19 @@
     font-weight: 600;
 }
 
+.start-sync-btn {
+    margin-top: 1rem;
+    width: 100%;
+}
+
+.start-host-prompt {
+    padding: 2rem 1rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px dashed var(--border-color);
+    width: 100%;
+}
+
 #reader {
     width: 100%;
     max-width: 300px;

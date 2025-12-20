@@ -11,7 +11,7 @@ interface SyncModalProps {
 
 export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
     const [mode, setMode] = useState<'send' | 'receive'>('send');
-    const [status, setStatus] = useState('Initializing...');
+    const [status, setStatus] = useState('Sync data with another device.');
     const [peerId, setPeerId] = useState('');
     const [progress, setProgress] = useState(0);
     const [knownPeers, setKnownPeers] = useState<string[]>([]);
@@ -81,8 +81,8 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
             setKnownPeers(JSON.parse(savedPeers));
         }
 
-        // Initial setup
-        initPeer();
+        // Initial setup - don't auto-start peer
+        // initPeer();
 
         return () => {
             peerRef.current?.destroy();
@@ -188,7 +188,14 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
 
                     {mode === 'send' && (
                         <div className="host-container">
-                            {peerId && (
+                            {!peerId ? (
+                                <div className="start-host-prompt">
+                                    <p className="sub-label">To share your data, start hosting to generate a QR code.</p>
+                                    <button className="action-btn start-sync-btn" onClick={() => initPeer()}>
+                                        Start Hosting & Show QR
+                                    </button>
+                                </div>
+                            ) : (
                                 <div className="qr-container">
                                     <QRCodeCanvas value={peerId} size={160} />
                                     <p className="peer-id-text">Room ID: <strong>{peerId}</strong></p>
