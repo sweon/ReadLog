@@ -12,11 +12,13 @@ interface SidebarProps {
     selectedBookId: number | null;
     theme: 'light' | 'dark';
     toggleTheme: () => void;
+    fontSize: number;
+    onFontSizeChange: (delta: number) => void;
 }
 
 type SortOption = 'date-desc' | 'date-asc' | 'title' | 'last-read';
 
-export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, theme, toggleTheme }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, theme, toggleTheme, fontSize, onFontSizeChange }) => {
     const [search, setSearch] = useState('');
     const [sort, setSort] = useState<SortOption>('date-desc');
     const [isAdding, setIsAdding] = useState(false);
@@ -125,6 +127,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                     >
                         + Add
                     </button>
+                    <div className="font-size-controls">
+                        <button className="icon-btn" onClick={() => onFontSizeChange(1)} data-tooltip={`Increase Font Size (${fontSize}px)`}>A+</button>
+                        <button className="icon-btn" onClick={() => onFontSizeChange(-1)} data-tooltip={`Decrease Font Size (${fontSize}px)`}>A-</button>
+                    </div>
                     <div className="right-actions">
                         <button
                             className="icon-btn"
