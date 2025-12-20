@@ -189,12 +189,12 @@
     background-color: rgba(255, 77, 79, 0.1);
 }
 
-.update-btn {
+.log-update-btn {
     background-color: #007bff;
     color: white;
     border: none;
 }
 
-.update-btn:hover {
+.log-update-btn:hover {
     background-color: #0056b3;
 }

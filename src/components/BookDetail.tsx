@@ -224,7 +224,7 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete }) => {
                                 min="0"
                             />
                         </div>
-                        <button type="submit" className="update-btn">Update</button>
+                        <button type="submit" className="log-update-btn">Update</button>
                     </form>
                     {warning && <div className="warning-msg">⚠️ {warning}</div>}
                 </div>
