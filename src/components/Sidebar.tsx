@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
 import { DataManagement } from './DataManagement';
 import { SyncModal } from './SyncModal';
+import { useRegisterSW } from 'virtual:pwa-register/react';
 import './DataManagement.css';
 import './Sidebar.css';
 
@@ -20,6 +21,34 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
     const [sort, setSort] = useState<SortOption>('date-desc');
     const [isAdding, setIsAdding] = useState(false);
     const [showSync, setShowSync] = useState(false);
+
+    const {
+        needRefresh: [needRefresh],
+        updateServiceWorker,
+    } = useRegisterSW();
+
+    const handleUpdateCheck = async () => {
+        if (needRefresh) {
+            if (confirm('A new version is available. Update now?')) {
+                updateServiceWorker(true);
+            }
+        } else {
+            // Manually trigger a service worker update check
+            if ('serviceWorker' in navigator) {
+                const registration = await navigator.serviceWorker.getRegistration();
+                if (registration) {
+                    await registration.update();
+                    // If an update is found, needRefresh will become true via the hook
+                    // We can give the user some feedback that we are checking
+                    alert('Checking for updates...');
+                } else {
+                    alert('Service worker not found.');
+                }
+            } else {
+                alert('PWA is not supported in this browser.');
+            }
+        }
+    };
 
     // New Book Form State
     const [newTitle, setNewTitle] = useState('');
@@ -97,6 +126,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                         + Add
                     </button>
                     <div className="right-actions">
+                        <button
+                            className={`icon-btn update-btn ${needRefresh ? 'has-update' : ''}`}
+                            onClick={handleUpdateCheck}
+                            title={needRefresh ? "Update Available!" : "Check Updates"}
+                        >
+                            ✨
+                        </button>
                         <button
                             className="icon-btn"
                             onClick={() => setShowSync(true)}

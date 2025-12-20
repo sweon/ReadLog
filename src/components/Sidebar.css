@@ -340,3 +340,20 @@
     color: var(--primary-color);
     border-radius: 8px;
 }
+
+.update-btn.has-update {
+    position: relative;
+    color: var(--primary-color);
+}
+
+.update-btn.has-update::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    background-color: #ff4d4f;
+    border-radius: 50%;
+    border: 1px solid white;
+}
