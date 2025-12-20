@@ -127,13 +127,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                     </button>
                     <div className="right-actions">
                         <button
-                            className={`icon-btn update-btn ${needRefresh ? 'has-update' : ''}`}
-                            onClick={handleUpdateCheck}
-                            title={needRefresh ? "Update Available!" : "Check Updates"}
-                        >
-                            ✨
-                        </button>
-                        <button
                             className="icon-btn"
                             onClick={() => setShowSync(true)}
                             title="Sync Devices"
@@ -141,6 +134,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                             🔄
                         </button>
                         <DataManagement />
+                        <button
+                            className={`icon-btn update-btn ${needRefresh ? 'has-update' : ''}`}
+                            onClick={handleUpdateCheck}
+                            title={needRefresh ? "Update Available!" : "Check Updates"}
+                        >
+                            🔃
+                        </button>
                         <button
                             className="icon-btn"
                             onClick={toggleTheme}
@@ -152,32 +152,34 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                 </div>
             </div>
 
-            {isAdding && (
-                <form onSubmit={handleAddBook} className="add-book-form">
-                    <input
-                        className="input-field"
-                        type="text"
-                        placeholder="Book Title"
-                        value={newTitle}
-                        onChange={e => setNewTitle(e.target.value)}
-                        required
-                        autoFocus
-                    />
-                    <input
-                        className="input-field"
-                        type="number"
-                        placeholder="Total Pages"
-                        value={newTotalPages}
-                        onChange={e => setNewTotalPages(e.target.value)}
-                        required
-                        min="1"
-                    />
-                    <div className="form-actions">
-                        <button type="button" className="sidebar-action-btn secondary" onClick={() => setIsAdding(false)}>Cancel</button>
-                        <button type="submit" className="sidebar-action-btn primary">Add</button>
-                    </div>
-                </form>
-            )}
+            {
+                isAdding && (
+                    <form onSubmit={handleAddBook} className="add-book-form">
+                        <input
+                            className="input-field"
+                            type="text"
+                            placeholder="Book Title"
+                            value={newTitle}
+                            onChange={e => setNewTitle(e.target.value)}
+                            required
+                            autoFocus
+                        />
+                        <input
+                            className="input-field"
+                            type="number"
+                            placeholder="Total Pages"
+                            value={newTotalPages}
+                            onChange={e => setNewTotalPages(e.target.value)}
+                            required
+                            min="1"
+                        />
+                        <div className="form-actions">
+                            <button type="button" className="sidebar-action-btn secondary" onClick={() => setIsAdding(false)}>Cancel</button>
+                            <button type="submit" className="sidebar-action-btn primary">Add</button>
+                        </div>
+                    </form>
+                )
+            }
 
             <div className="controls">
                 <div className="search-wrapper">
@@ -238,6 +240,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                 {books?.length === 0 && <div className="empty-state">No books. Click + to add.</div>}
             </div>
             {showSync && <SyncModal onClose={() => setShowSync(false)} />}
-        </div>
+        </div >
     );
 };
