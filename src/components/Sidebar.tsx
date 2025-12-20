@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
 import { DataManagement } from './DataManagement';
+import { SyncModal } from './SyncModal';
 import './DataManagement.css';
 import './Sidebar.css';
 
@@ -18,6 +19,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
     const [search, setSearch] = useState('');
     const [sort, setSort] = useState<SortOption>('date-desc');
     const [isAdding, setIsAdding] = useState(false);
+    const [showSync, setShowSync] = useState(false);
 
     // New Book Form State
     const [newTitle, setNewTitle] = useState('');
@@ -95,6 +97,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                         + Add
                     </button>
                     <div className="right-actions">
+                        <button
+                            className="icon-btn"
+                            onClick={() => setShowSync(true)}
+                            title="Sync Devices"
+                        >
+                            🔄
+                        </button>
                         <DataManagement />
                         <button
                             className="icon-btn"
@@ -192,6 +201,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                 })}
                 {books?.length === 0 && <div className="empty-state">No books. Click + to add.</div>}
             </div>
+            {showSync && <SyncModal onClose={() => setShowSync(false)} />}
         </div>
     );
 };

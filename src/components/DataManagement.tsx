@@ -2,15 +2,14 @@ import React, { useState } from 'react';
 import { db, type Book, type Log } from '../db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { format } from 'date-fns';
-import { SyncModal } from './SyncModal';
 
 export const DataManagement: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [showSync, setShowSync] = useState(false);
     const [view, setView] = useState<'main' | 'export' | 'import'>('main');
     const [selectedBooks, setSelectedBooks] = useState<number[]>([]);
 
     const books = useLiveQuery(() => db.books.toArray());
+    const totalLogs = useLiveQuery(() => db.logs.count());
 
     const handleExport = async () => {
         if (!books) return;
@@ -129,7 +128,6 @@ export const DataManagement: React.FC = () => {
 
     return (
         <div className="modal-overlay">
-            {showSync && <SyncModal onClose={() => setShowSync(false)} />}
 
             <div className="modal-content data-modal">
                 <div className="modal-header">
@@ -148,22 +146,19 @@ export const DataManagement: React.FC = () => {
                                         <span className="count">{books?.length || 0}</span>
                                         <span className="label">Total Books</span>
                                     </div>
-                                    <div className="action-card" onClick={() => setShowSync(true)}>
-                                        <div className="icon">🔄</div>
-                                        <h4>Sync Devices</h4>
-                                        <p>Transfer data via QR Code.</p>
+                                    <div className="stat-box">
+                                        <span className="count">{totalLogs || 0}</span>
+                                        <span className="label">Total Sessions</span>
                                     </div>
                                 </div>
                                 <div className="action-cards">
                                     <div className="action-card" onClick={() => setView('export')}>
                                         <div className="icon">📤</div>
                                         <h4>Backup Data</h4>
-                                        <p>Export your reading logs to a JSON file.</p>
                                     </div>
                                     <div className="action-card" onClick={() => setView('import')}>
                                         <div className="icon">📥</div>
                                         <h4>Restore Data</h4>
-                                        <p>Import logs from a previous backup.</p>
                                     </div>
                                 </div>
                             </div>
