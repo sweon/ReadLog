@@ -129,7 +129,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                         <button
                             className="icon-btn"
                             onClick={() => setShowSync(true)}
-                            title="Sync Devices"
+                            data-tooltip="Sync Devices"
                         >
                             🔄
                         </button>
@@ -137,14 +137,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                         <button
                             className={`icon-btn update-btn ${needRefresh ? 'has-update' : ''}`}
                             onClick={handleUpdateCheck}
-                            title={needRefresh ? "Update Available!" : "Check Updates"}
+                            data-tooltip={needRefresh ? "Update Available!" : "Check Updates"}
                         >
                             🔃
                         </button>
                         <button
                             className="icon-btn"
                             onClick={toggleTheme}
-                            title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+                            data-tooltip={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
                         >
                             {theme === 'light' ? '🌙' : '☀️'}
                         </button>
