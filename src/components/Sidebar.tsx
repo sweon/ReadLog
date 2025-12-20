@@ -128,8 +128,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                         + Add
                     </button>
                     <div className="font-size-controls">
-                        <button className="icon-btn" onClick={() => onFontSizeChange(1)} data-tooltip={`Increase Font Size (${fontSize}px)`}>+</button>
                         <button className="icon-btn" onClick={() => onFontSizeChange(-1)} data-tooltip={`Decrease Font Size (${fontSize}px)`}>-</button>
+                        <button className="icon-btn" onClick={() => onFontSizeChange(1)} data-tooltip={`Increase Font Size (${fontSize}px)`}>+</button>
                     </div>
                     <div className="right-actions">
                         <button
