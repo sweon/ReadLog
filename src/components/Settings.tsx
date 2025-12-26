@@ -168,12 +168,20 @@ export const Settings: React.FC = () => {
         </div>
     );
 
+    const getSectionTitle = () => {
+        switch (activeSection) {
+            case 'data': return 'Data Management';
+            case 'language': return 'Language';
+            case 'help': return 'Help & About';
+            default: return 'Settings';
+        }
+    };
+
     const renderSection = () => {
         switch (activeSection) {
             case 'data':
                 return (
                     <div className="subview-content">
-                        <h2>Data Management</h2>
                         <div className="data-actions">
                             <div className="action-group">
                                 <h3>Backup Data</h3>
@@ -212,7 +220,6 @@ export const Settings: React.FC = () => {
             case 'language':
                 return (
                     <div className="subview-content">
-                        <h2>Language</h2>
                         <div className="language-options">
                             <button
                                 className={`lang-btn ${language === 'en' ? 'active' : ''}`}
@@ -232,7 +239,6 @@ export const Settings: React.FC = () => {
             case 'help':
                 return (
                     <div className="subview-content">
-                        <h2>Help & About</h2>
                         <div className="help-content">
                             <div className="help-item">
                                 <h3>How to use</h3>
@@ -254,11 +260,11 @@ export const Settings: React.FC = () => {
         <div className="settings-page">
             <header className="settings-header">
                 {activeSection && (
-                    <button className="back-btn-top" onClick={() => setActiveSection(null)}>
-                        ← Back
+                    <button className="subview-back-btn" onClick={() => setActiveSection(null)}>
+                        ←
                     </button>
                 )}
-                <h1 className={activeSection ? 'hidden' : ''}>Settings</h1>
+                <h1>{getSectionTitle()}</h1>
             </header>
 
             <div className="settings-container">
