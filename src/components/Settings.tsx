@@ -307,8 +307,8 @@ export const Settings: React.FC<SettingsProps> = ({ onClose }) => {
                                 </div>
                             </div>
                             <div className="help-item">
-                                <h3>{t('app_info')}</h3>
-                                <p>{t('app_info_desc')}</p>
+                                <h3>{t('legal_title')}</h3>
+                                <p style={{ fontSize: '0.9rem', opacity: 0.7 }}>{t('legal_desc')}</p>
                             </div>
                         </div>
                     </div>
