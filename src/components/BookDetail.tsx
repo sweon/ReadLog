@@ -7,6 +7,7 @@ import {
 import { format } from 'date-fns';
 import html2canvas from 'html2canvas';
 import './BookDetail.css';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface BookDetailProps {
     bookId: number;
@@ -14,6 +15,7 @@ interface BookDetailProps {
 }
 
 export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete }) => {
+    const { t } = useLanguage();
     const [pageInput, setPageInput] = useState('');
     const [warning, setWarning] = useState('');
     const [showCongrats, setShowCongrats] = useState(false);
@@ -87,7 +89,7 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete }) => {
     };
 
     const handleDeleteBook = async () => {
-        if (confirm(`Are you sure you want to delete "${book.title}" and all its reading logs? This cannot be undone.`)) {
+        if (confirm(`${t('confirm_delete')}\n"${book.title}"`)) {
             await db.transaction('rw', db.books, db.logs, async () => {
                 await db.logs.where('bookId').equals(book.id!).delete();
                 await db.books.delete(book.id!);
@@ -185,28 +187,28 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete }) => {
                 <div className="stats-grid">
                     <div className="stat-card">
                         <div className="stat-value">{percentComplete}%</div>
-                        <div className="stat-label">Complete</div>
+                        <div className="stat-label">{t('percent_complete')}</div>
                     </div>
                     <div className="stat-card">
                         <div className="stat-value">{currentProgress} / {book.totalPages}</div>
-                        <div className="stat-label">Pages Read</div>
+                        <div className="stat-label">{t('pages_read')}</div>
                     </div>
                     <div className="stat-card">
                         <div className="stat-value">{logs.length}</div>
-                        <div className="stat-label">Sessions</div>
+                        <div className="stat-label">{t('sessions')}</div>
                     </div>
                 </div>
             </div>
 
             {/* Actions Row */}
             <div className="actions-row">
-                <button className="export-btn" onClick={exportChart}>📷 Save Image</button>
+                <button className="export-btn" onClick={exportChart}>📷 {t('export_chart')}</button>
                 <button
                     onClick={handleDeleteBook}
                     className="delete-btn"
-                    data-tooltip="Delete Book"
+                    data-tooltip={t('delete_book')}
                 >
-                    Delete
+                    {t('delete_book')}
                 </button>
             </div>
 
@@ -215,7 +217,7 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete }) => {
                 <div className="log-form-section">
                     <form onSubmit={handleAddLog} className="log-form">
                         <div className="form-group">
-                            <label>Current Page (Today)</label>
+                            <label>{t('current_page')}</label>
                             <input
                                 type="number"
                                 value={pageInput}
@@ -224,7 +226,7 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete }) => {
                                 min="0"
                             />
                         </div>
-                        <button type="submit" className="log-update-btn">Update</button>
+                        <button type="submit" className="log-update-btn">{t('update_progress')}</button>
                     </form>
                     {warning && <div className="warning-msg">⚠️ {warning}</div>}
                 </div>
@@ -234,9 +236,9 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete }) => {
             {showCongrats && (
                 <div className="congrats-modal" onClick={() => setShowCongrats(false)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        <h2>🎉 Congratulations! 🎉</h2>
+                        <h2>🎉 {t('congrats_finished')} 🎉</h2>
                         <p>You have finished <strong>{book.title}</strong>!</p>
-                        <button onClick={() => setShowCongrats(false)}>Close</button>
+                        <button onClick={() => setShowCongrats(false)}>{t('cancel')}</button>
                     </div>
                 </div>
             )}

@@ -4,12 +4,12 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { format } from 'date-fns';
 import './Settings.css';
 
+import { useLanguage } from '../contexts/LanguageContext';
+
 export const Settings: React.FC = () => {
+    const { language, setLanguage, t } = useLanguage();
     const [selectedBooks, setSelectedBooks] = useState<number[]>([]);
     const [activeSection, setActiveSection] = useState<'data' | 'language' | 'help' | null>(null);
-    const [language, setLanguage] = useState<'en' | 'ko'>(() => {
-        return (localStorage.getItem('language') as 'en' | 'ko') || 'en';
-    });
 
     const books = useLiveQuery(() => db.books.toArray());
     const totalLogs = useLiveQuery(() => db.logs.count());
@@ -37,7 +37,7 @@ export const Settings: React.FC = () => {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
 
-        const filename = prompt('Enter filename for export:', `readlog-backup-${format(new Date(), 'yyyy-MM-dd')}`);
+        const filename = prompt(t('enter_filename'), `readlog-backup-${format(new Date(), 'yyyy-MM-dd')}`);
         if (filename) {
             link.href = url;
             link.download = filename.endsWith('.json') ? filename : `${filename}.json`;
@@ -98,11 +98,11 @@ export const Settings: React.FC = () => {
                             }
                         }
                     }
-                    alert(`Import successful!\nNew Books: ${booksImported}\nNew Logs: ${logsImported}`);
+                    alert(`${t('import_success')}\n${t('new_books')}: ${booksImported}\n${t('new_logs')}: ${logsImported}`);
                 });
             } catch (err) {
                 console.error(err);
-                alert('Failed to import file. Make sure it is a valid ReadLog backup.');
+                alert(t('import_failed'));
             }
         };
         reader.readAsText(file);
@@ -129,40 +129,40 @@ export const Settings: React.FC = () => {
     const renderMain = () => (
         <div className="settings-main-view">
             <section className="settings-section summary-compact">
-                <h2>Summary</h2>
+                <h2>{t('summary')}</h2>
                 <div className="summary-grid">
                     <div className="summary-card">
                         <span className="value">{books?.length || 0}</span>
-                        <span className="label">Books</span>
+                        <span className="label">{t('total_books')}</span>
                     </div>
                     <div className="summary-card">
                         <span className="value">{totalLogs || 0}</span>
-                        <span className="label">Sessions</span>
+                        <span className="label">{t('total_sessions')}</span>
                     </div>
                 </div>
             </section>
 
             <nav className="settings-nav-list">
                 <button className="nav-item-btn" onClick={() => setActiveSection('data')}>
-                    <span>Data Management</span>
+                    <span>{t('data_management')}</span>
                     <span className="chevron">›</span>
                 </button>
                 <button className="nav-item-btn" onClick={() => setActiveSection('language')}>
-                    <span>Language</span>
+                    <span>{t('language')}</span>
                     <span className="chevron">›</span>
                 </button>
                 <button className="nav-item-btn" onClick={() => setActiveSection('help')}>
-                    <span>Help & About</span>
+                    <span>{t('help_about')}</span>
                     <span className="chevron">›</span>
                 </button>
             </nav>
 
             <footer className="settings-footer">
                 <div className="legal-disclaimer">
-                    <p><strong>Legal Disclaimer:</strong> This application is provided "as is" without any warranties. Your data is stored locally in your browser and is your responsibility. We do not collect or store your personal information on our servers.</p>
+                    <p><strong>{t('legal_title')}:</strong> {t('legal_desc')}</p>
                 </div>
                 <button className="share-btn" onClick={handleShare}>
-                    <span>Share with Friends</span> 🔗
+                    <span>{t('share')}</span> 🔗
                 </button>
             </footer>
         </div>
@@ -170,10 +170,10 @@ export const Settings: React.FC = () => {
 
     const getSectionTitle = () => {
         switch (activeSection) {
-            case 'data': return 'Data Management';
-            case 'language': return 'Language';
-            case 'help': return 'Help & About';
-            default: return 'Settings';
+            case 'data': return t('data_management');
+            case 'language': return t('language');
+            case 'help': return t('help_about');
+            default: return t('settings');
         }
     };
 
@@ -184,8 +184,8 @@ export const Settings: React.FC = () => {
                     <div className="subview-content">
                         <div className="data-actions">
                             <div className="action-group">
-                                <h3>Backup Data</h3>
-                                <p>Export your reading logs to a JSON file. Select specific books or leave none selected to export everything.</p>
+                                <h3>{t('backup_data')}</h3>
+                                <p>{t('backup_desc')}</p>
                                 <div className="book-selection-list">
                                     {books?.map(book => (
                                         <label key={book.id} className="selection-row">
@@ -204,13 +204,13 @@ export const Settings: React.FC = () => {
                                         </label>
                                     ))}
                                 </div>
-                                <button className="settings-action-btn primary" onClick={handleExport}>Backup Now</button>
+                                <button className="settings-action-btn primary" onClick={handleExport}>{t('backup_now')}</button>
                             </div>
                             <div className="action-group">
-                                <h3>Restore Data</h3>
-                                <p>Import reading logs from a previously exported JSON file.</p>
+                                <h3>{t('restore_data')}</h3>
+                                <p>{t('restore_desc')}</p>
                                 <div className="upload-wrapper">
-                                    <button className="settings-action-btn secondary">Choose File</button>
+                                    <button className="settings-action-btn secondary">{t('choose_file')}</button>
                                     <input type="file" accept=".json" onChange={handleImport} />
                                 </div>
                             </div>
@@ -241,12 +241,12 @@ export const Settings: React.FC = () => {
                     <div className="subview-content">
                         <div className="help-content">
                             <div className="help-item">
-                                <h3>How to use</h3>
-                                <p>Add a new book using the "+ Add" button in the sidebar. Track your daily progress by entering the current page number on the book's detail page. Use the sync feature to view your progress on multiple devices.</p>
+                                <h3>{t('how_to_use')}</h3>
+                                <p>{t('how_to_use_desc')}</p>
                             </div>
                             <div className="help-item">
-                                <h3>App Information</h3>
-                                <p>ReadLog v1.2.0 - A local-first, privacy-focused reading tracker.</p>
+                                <h3>{t('app_info')}</h3>
+                                <p>{t('app_info_desc')}</p>
                             </div>
                         </div>
                     </div>
@@ -264,7 +264,7 @@ export const Settings: React.FC = () => {
                         ←
                     </button>
                 )}
-                <h1>{getSectionTitle()}</h1>
+                <h1>{activeSection ? getSectionTitle() : t('settings')}</h1>
             </header>
 
             <div className="settings-container">

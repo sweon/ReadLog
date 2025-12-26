@@ -3,8 +3,10 @@ import { Sidebar } from './components/Sidebar';
 import { BookDetail } from './components/BookDetail';
 import { Settings } from './components/Settings';
 import './App.css';
+import { useLanguage } from './contexts/LanguageContext';
 
 function App() {
+  const { t } = useLanguage();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [fontSize, setFontSize] = useState<number>(16);
   const [selectedBookId, setSelectedBookId] = useState<number | null>(null);
@@ -124,8 +126,8 @@ function App() {
           <BookDetail bookId={selectedBookId} onDelete={() => setSelectedBookId(null)} />
         ) : (
           <div className="empty-state-main">
-            <h1>Select a book to view progress</h1>
-            <p>Or create a new one to get started.</p>
+            <h1>{t('select_book_prompt')}</h1>
+            <p>{t('start_prompt')}</p>
           </div>
         )}
       </main>

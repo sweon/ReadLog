@@ -5,6 +5,7 @@ import { SyncModal } from './SyncModal';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import './DataManagement.css';
 import './Sidebar.css';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface SidebarProps {
     onSelectBook: (bookId: number | null) => void;
@@ -19,6 +20,7 @@ interface SidebarProps {
 type SortOption = 'date-desc' | 'date-asc' | 'title' | 'last-read';
 
 export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, theme, toggleTheme, fontSize, onFontSizeChange, onShowSettings }) => {
+    const { t } = useLanguage();
     const [search, setSearch] = useState('');
     const [sort, setSort] = useState<SortOption>('date-desc');
     const [isAdding, setIsAdding] = useState(false);
@@ -157,9 +159,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                     <button
                         className={`icon-btn add-btn ${isAdding ? 'active' : ''}`}
                         onClick={() => setIsAdding(!isAdding)}
-                        data-tooltip="Add New Book"
+                        data-tooltip={t('add_book')}
                     >
-                        + Add
+                        {t('add_book')}
                     </button>
                     <div className="font-size-controls">
                         <button className="icon-btn" onClick={() => onFontSizeChange(-1)} data-tooltip={`Decrease Font Size (${fontSize}px)`}>-</button>
@@ -169,28 +171,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                         <button
                             className="icon-btn"
                             onClick={() => setShowSync(true)}
-                            data-tooltip="Sync Devices"
+                            data-tooltip={t('sync_devices')}
                         >
                             🔄
                         </button>
                         <button
                             className={`icon-btn update-btn ${needRefresh ? 'has-update' : ''}`}
                             onClick={handleUpdateCheck}
-                            data-tooltip={needRefresh ? "Update Available!" : "Check Updates"}
+                            data-tooltip={needRefresh ? t('update_available') : t('check_updates')}
                         >
                             🔃
                         </button>
                         <button
                             className="icon-btn"
                             onClick={toggleTheme}
-                            data-tooltip={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+                            data-tooltip={theme === 'light' ? t('theme_dark') : t('theme_light')}
                         >
                             {theme === 'light' ? '🌙' : '☀️'}
                         </button>
                         <button
                             className="icon-btn"
                             onClick={onShowSettings}
-                            data-tooltip="Settings"
+                            data-tooltip={t('settings')}
                         >
                             ⚙️
                         </button>
@@ -210,7 +212,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                         <input
                             className="input-field"
                             type="text"
-                            placeholder="Book Title"
+                            placeholder={t('book_title')}
                             value={newTitle}
                             onChange={e => setNewTitle(e.target.value)}
                             required
@@ -219,15 +221,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                         <input
                             className="input-field"
                             type="number"
-                            placeholder="Total Pages"
+                            placeholder={t('total_pages')}
                             value={newTotalPages}
                             onChange={e => setNewTotalPages(e.target.value)}
                             required
                             min="1"
                         />
                         <div className="form-actions">
-                            <button type="button" className="sidebar-action-btn secondary" onClick={() => setIsAdding(false)}>Cancel</button>
-                            <button type="submit" className="sidebar-action-btn primary">Add</button>
+                            <button type="button" className="sidebar-action-btn secondary" onClick={() => setIsAdding(false)}>{t('cancel')}</button>
+                            <button type="submit" className="sidebar-action-btn primary">{t('save')}</button>
                         </div>
                     </form>
                 )
@@ -238,7 +240,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                     <input
                         className="search-input"
                         type="text"
-                        placeholder="Search library..."
+                        placeholder={t('search_placeholder')}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                     />
@@ -257,12 +259,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                         className="sort-select"
                         value={sort}
                         onChange={e => setSort(e.target.value as SortOption)}
-                        data-tooltip="Sort Books"
+                        data-tooltip={t('sort_books')}
                     >
-                        <option value="date-desc">Newest</option>
-                        <option value="date-asc">Oldest</option>
-                        <option value="title">A-Z</option>
-                        <option value="last-read">Recent</option>
+                        <option value="date-desc">{t('sort_date_desc')}</option>
+                        <option value="date-asc">{t('sort_date_asc')}</option>
+                        <option value="title">{t('sort_title')}</option>
+                        <option value="last-read">{t('sort_last_read')}</option>
                     </select>
                 </div>
             </div>
@@ -289,7 +291,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                         </div>
                     );
                 })}
-                {books?.length === 0 && <div className="empty-state">No books. Click + to add.</div>}
+                {books?.length === 0 && <div className="empty-state">{t('no_books')}</div>}
             </div>
             {showSync && <SyncModal onClose={() => setShowSync(false)} />}
         </div >
