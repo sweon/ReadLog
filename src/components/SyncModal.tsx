@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { exportDB, importDB } from '../db';
@@ -74,7 +74,7 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
     const [inputPin, setInputPin] = useState('');
     const [syncStats, setSyncStats] = useState<{ books: number; logs: number } | null>(null);
     const [isScanning, setIsScanning] = useState(false);
-    const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
+    const html5QrCodeRef = React.useRef<Html5Qrcode | null>(null);
 
     // Host: Start sharing
     const startHosting = async () => {
