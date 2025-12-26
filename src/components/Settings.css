@@ -1,3 +1,8 @@
+/* Mobile Back Button - Hidden on Desktop */
+.mobile-back-btn {
+    display: none;
+}
+
 .settings-page {
     width: 100%;
     max-width: 800px;
