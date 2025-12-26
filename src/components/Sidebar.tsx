@@ -123,7 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                     <button
                         className={`icon-btn add-btn ${isAdding ? 'active' : ''}`}
                         onClick={() => setIsAdding(!isAdding)}
-                        title="Add New Book"
+                        data-tooltip="Add New Book"
                     >
                         + Add
                     </button>
@@ -200,7 +200,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                         <button
                             className="clear-search-btn"
                             onClick={() => setSearch('')}
-                            title="Clear Search"
+                            data-tooltip="Clear Search"
                         >
                             ×
                         </button>
@@ -211,7 +211,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                         className="sort-select"
                         value={sort}
                         onChange={e => setSort(e.target.value as SortOption)}
-                        title="Sort Books"
+                        data-tooltip="Sort Books"
                     >
                         <option value="date-desc">Newest</option>
                         <option value="date-asc">Oldest</option>

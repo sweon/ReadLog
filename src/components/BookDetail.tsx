@@ -204,7 +204,7 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete }) => {
                 <button
                     onClick={handleDeleteBook}
                     className="delete-btn"
-                    title="Delete Book"
+                    data-tooltip="Delete Book"
                 >
                     Delete
                 </button>

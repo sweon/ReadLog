@@ -4,7 +4,8 @@
     flex-direction: column;
     background-color: var(--sidebar-bg);
     border-right: 1px solid var(--border-color);
-    padding: 1.5rem 1rem;
+    padding: 2.2rem 1rem 1.5rem 1rem;
+    /* Increased top padding for tooltips */
     gap: 1.5rem;
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
@@ -72,27 +73,31 @@
 [data-tooltip]::before {
     content: attr(data-tooltip);
     position: absolute;
-    bottom: -30px;
+    bottom: calc(100% + 12px);
+    /* Moved above the icon with more gap */
     left: 50%;
     transform: translateX(-50%) translateY(5px);
-    padding: 4px 8px;
-    background-color: #333;
+    padding: 4px 10px;
+    background-color: rgba(51, 51, 51, 0.95);
+    /* Slightly transparent */
     color: white;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     white-space: nowrap;
-    border-radius: 4px;
+    border-radius: 6px;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1000;
     pointer-events: none;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 [data-tooltip]:hover::before {
     opacity: 1;
     visibility: visible;
     transform: translateX(-50%) translateY(0);
+    transition-delay: 0.4s;
+    /* Added delay to avoid blocking cursor/finger on quick actions */
 }
 
 [data-theme='dark'] [data-tooltip]::before {
