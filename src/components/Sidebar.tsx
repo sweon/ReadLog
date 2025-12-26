@@ -33,7 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
     };
 
     const {
-        needRefresh: [needRefresh],
+        needRefresh: [needRefresh, setNeedRefresh],
         updateServiceWorker,
     } = useRegisterSW({
         onRegistered(r) {
@@ -52,6 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
         // If an update is already detected by the hook
         if (needRefresh) {
             showStatus(t('installing_update') || 'Installing updates...');
+            setNeedRefresh(false);
             updateServiceWorker(true);
             return;
         }
@@ -84,6 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                     if (newWorker.state === 'installed') {
                         // Worker is installed and waiting to activate
                         showStatus(t('update_found_reloading') || 'New version found! Reloading...');
+                        setNeedRefresh(false);
                         setTimeout(() => updateServiceWorker(true), 500);
                     }
                 });
@@ -103,6 +105,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                 if (waiting) {
                     updateDetected = true;
                     showStatus(t('update_found_reloading') || 'New version found! Reloading...');
+                    setNeedRefresh(false);
                     setTimeout(() => updateServiceWorker(true), 500);
                 } else if (installing) {
                     updateDetected = true;
@@ -111,6 +114,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                     installing.addEventListener('statechange', () => {
                         if (installing.state === 'installed') {
                             showStatus(t('update_found_reloading') || 'New version found! Reloading...');
+                            setNeedRefresh(false);
                             setTimeout(() => updateServiceWorker(true), 500);
                         }
                     });
