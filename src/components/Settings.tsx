@@ -111,7 +111,6 @@ export const Settings: React.FC = () => {
     const handleLanguageChange = (lang: 'en' | 'ko') => {
         setLanguage(lang);
         localStorage.setItem('language', lang);
-        // In a real app, you'd use an i18n library here
         alert('Language setting saved. (UI translations coming soon)');
     };
 
@@ -127,130 +126,143 @@ export const Settings: React.FC = () => {
         }
     };
 
+    const renderMain = () => (
+        <div className="settings-main-view">
+            <section className="settings-section summary-compact">
+                <h2>Summary</h2>
+                <div className="summary-grid">
+                    <div className="summary-card">
+                        <span className="value">{books?.length || 0}</span>
+                        <span className="label">Books</span>
+                    </div>
+                    <div className="summary-card">
+                        <span className="value">{totalLogs || 0}</span>
+                        <span className="label">Sessions</span>
+                    </div>
+                </div>
+            </section>
+
+            <nav className="settings-nav-list">
+                <button className="nav-item-btn" onClick={() => setActiveSection('data')}>
+                    <span>Data Management</span>
+                    <span className="chevron">›</span>
+                </button>
+                <button className="nav-item-btn" onClick={() => setActiveSection('language')}>
+                    <span>Language</span>
+                    <span className="chevron">›</span>
+                </button>
+                <button className="nav-item-btn" onClick={() => setActiveSection('help')}>
+                    <span>Help & About</span>
+                    <span className="chevron">›</span>
+                </button>
+            </nav>
+
+            <footer className="settings-footer">
+                <div className="legal-disclaimer">
+                    <p><strong>Legal Disclaimer:</strong> This application is provided "as is" without any warranties. Your data is stored locally in your browser and is your responsibility. We do not collect or store your personal information on our servers.</p>
+                </div>
+                <button className="share-btn" onClick={handleShare}>
+                    <span>Share with Friends</span> 🔗
+                </button>
+            </footer>
+        </div>
+    );
+
+    const renderSection = () => {
+        switch (activeSection) {
+            case 'data':
+                return (
+                    <div className="subview-content">
+                        <h2>Data Management</h2>
+                        <div className="data-actions">
+                            <div className="action-group">
+                                <h3>Backup Data</h3>
+                                <p>Export your reading logs to a JSON file. Select specific books or leave none selected to export everything.</p>
+                                <div className="book-selection-list">
+                                    {books?.map(book => (
+                                        <label key={book.id} className="selection-row">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedBooks.includes(book.id!)}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        setSelectedBooks([...selectedBooks, book.id!]);
+                                                    } else {
+                                                        setSelectedBooks(selectedBooks.filter(id => id !== book.id));
+                                                    }
+                                                }}
+                                            />
+                                            <span>{book.title}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                                <button className="settings-action-btn primary" onClick={handleExport}>Backup Now</button>
+                            </div>
+                            <div className="action-group">
+                                <h3>Restore Data</h3>
+                                <p>Import reading logs from a previously exported JSON file.</p>
+                                <div className="upload-wrapper">
+                                    <button className="settings-action-btn secondary">Choose File</button>
+                                    <input type="file" accept=".json" onChange={handleImport} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            case 'language':
+                return (
+                    <div className="subview-content">
+                        <h2>Language</h2>
+                        <div className="language-options">
+                            <button
+                                className={`lang-btn ${language === 'en' ? 'active' : ''}`}
+                                onClick={() => handleLanguageChange('en')}
+                            >
+                                English
+                            </button>
+                            <button
+                                className={`lang-btn ${language === 'ko' ? 'active' : ''}`}
+                                onClick={() => handleLanguageChange('ko')}
+                            >
+                                한국어
+                            </button>
+                        </div>
+                    </div>
+                );
+            case 'help':
+                return (
+                    <div className="subview-content">
+                        <h2>Help & About</h2>
+                        <div className="help-content">
+                            <div className="help-item">
+                                <h3>How to use</h3>
+                                <p>Add a new book using the "+ Add" button in the sidebar. Track your daily progress by entering the current page number on the book's detail page. Use the sync feature to view your progress on multiple devices.</p>
+                            </div>
+                            <div className="help-item">
+                                <h3>App Information</h3>
+                                <p>ReadLog v1.2.0 - A local-first, privacy-focused reading tracker.</p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            default:
+                return null;
+        }
+    };
+
     return (
         <div className="settings-page">
             <header className="settings-header">
-                <h1>Settings</h1>
+                {activeSection && (
+                    <button className="back-btn-top" onClick={() => setActiveSection(null)}>
+                        ← Back
+                    </button>
+                )}
+                <h1 className={activeSection ? 'hidden' : ''}>Settings</h1>
             </header>
 
             <div className="settings-container">
-                <section className="settings-section summary-compact">
-                    <h2>Summary</h2>
-                    <div className="summary-grid">
-                        <div className="summary-card">
-                            <span className="value">{books?.length || 0}</span>
-                            <span className="label">Books</span>
-                        </div>
-                        <div className="summary-card">
-                            <span className="value">{totalLogs || 0}</span>
-                            <span className="label">Sessions</span>
-                        </div>
-                    </div>
-                </section>
-
-                <div className="settings-menu">
-                    {/* Data Management Section */}
-                    <div className={`menu-item ${activeSection === 'data' ? 'open' : ''}`}>
-                        <button className="menu-trigger" onClick={() => setActiveSection(activeSection === 'data' ? null : 'data')}>
-                            <span>Data Management</span>
-                            <span className="arrow">{activeSection === 'data' ? '▼' : '▶'}</span>
-                        </button>
-                        {activeSection === 'data' && (
-                            <div className="menu-content">
-                                <div className="data-actions">
-                                    <div className="action-group">
-                                        <h3>Backup Data</h3>
-                                        <p>Export your reading logs to a JSON file. Select specific books or leave none selected to export everything.</p>
-                                        <div className="book-selection-list">
-                                            {books?.map(book => (
-                                                <label key={book.id} className="selection-row">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedBooks.includes(book.id!)}
-                                                        onChange={(e) => {
-                                                            if (e.target.checked) {
-                                                                setSelectedBooks([...selectedBooks, book.id!]);
-                                                            } else {
-                                                                setSelectedBooks(selectedBooks.filter(id => id !== book.id));
-                                                            }
-                                                        }}
-                                                    />
-                                                    <span>{book.title}</span>
-                                                </label>
-                                            ))}
-                                        </div>
-                                        <button className="settings-action-btn primary" onClick={handleExport}>Backup Now</button>
-                                    </div>
-                                    <div className="action-group">
-                                        <h3>Restore Data</h3>
-                                        <p>Import reading logs from a previously exported JSON file.</p>
-                                        <div className="upload-wrapper">
-                                            <button className="settings-action-btn secondary">Choose File</button>
-                                            <input type="file" accept=".json" onChange={handleImport} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Language Section */}
-                    <div className={`menu-item ${activeSection === 'language' ? 'open' : ''}`}>
-                        <button className="menu-trigger" onClick={() => setActiveSection(activeSection === 'language' ? null : 'language')}>
-                            <span>Language</span>
-                            <span className="arrow">{activeSection === 'language' ? '▼' : '▶'}</span>
-                        </button>
-                        {activeSection === 'language' && (
-                            <div className="menu-content">
-                                <div className="language-options">
-                                    <button
-                                        className={`lang-btn ${language === 'en' ? 'active' : ''}`}
-                                        onClick={() => handleLanguageChange('en')}
-                                    >
-                                        English
-                                    </button>
-                                    <button
-                                        className={`lang-btn ${language === 'ko' ? 'active' : ''}`}
-                                        onClick={() => handleLanguageChange('ko')}
-                                    >
-                                        한국어
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Help & About Section */}
-                    <div className={`menu-item ${activeSection === 'help' ? 'open' : ''}`}>
-                        <button className="menu-trigger" onClick={() => setActiveSection(activeSection === 'help' ? null : 'help')}>
-                            <span>Help & About</span>
-                            <span className="arrow">{activeSection === 'help' ? '▼' : '▶'}</span>
-                        </button>
-                        {activeSection === 'help' && (
-                            <div className="menu-content">
-                                <div className="help-content">
-                                    <div className="help-item">
-                                        <h3>How to use</h3>
-                                        <p>Add a new book using the "+ Add" button in the sidebar. Track your daily progress by entering the current page number on the book's detail page. Use the sync feature to view your progress on multiple devices.</p>
-                                    </div>
-                                    <div className="help-item">
-                                        <h3>App Information</h3>
-                                        <p>ReadLog v1.2.0 - A local-first, privacy-focused reading tracker.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <footer className="settings-footer">
-                    <div className="legal-disclaimer">
-                        <p><strong>Legal Disclaimer:</strong> This application is provided "as is" without any warranties. Your data is stored locally in your browser and is your responsibility. We do not collect or store your personal information on our servers.</p>
-                    </div>
-                    <button className="share-btn" onClick={handleShare}>
-                        <span>Share with Friends</span> 🔗
-                    </button>
-                </footer>
+                {activeSection ? renderSection() : renderMain()}
             </div>
         </div>
     );
