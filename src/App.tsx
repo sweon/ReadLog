@@ -29,6 +29,43 @@ function App() {
     document.documentElement.style.fontSize = `${savedFontSize}px`;
   }, []);
 
+  // History Management for Mobile Back Button
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const state = event.state;
+      if (state?.bookId) {
+        setSelectedBookId(state.bookId);
+        setShowSettings(false);
+      } else if (state?.settings) {
+        setShowSettings(true);
+        setSelectedBookId(null);
+      } else {
+        // Default / Home
+        setSelectedBookId(null);
+        setShowSettings(false);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const handleBookSelect = (id: number) => {
+    window.history.pushState({ bookId: id }, '', '');
+    setSelectedBookId(id);
+    setShowSettings(false);
+  };
+
+  const handleShowSettings = () => {
+    window.history.pushState({ settings: true }, '', '');
+    setShowSettings(true);
+    setSelectedBookId(null);
+  };
+
+  const handleBack = () => {
+    window.history.back();
+  };
+
   const startResizing = (e: React.MouseEvent | React.TouchEvent) => {
     setIsResizing(true);
     e.preventDefault();
@@ -96,19 +133,13 @@ function App() {
     <div className={`app-container ${isResizing ? 'resizing' : ''} ${hasActiveView ? 'view-detail' : 'view-sidebar'}`}>
       <div className="sidebar-wrapper" style={{ width: sidebarWidth }}>
         <Sidebar
-          onSelectBook={(id) => {
-            setSelectedBookId(id);
-            setShowSettings(false);
-          }}
+          onSelectBook={handleBookSelect}
           selectedBookId={showSettings ? null : selectedBookId}
           theme={theme}
           toggleTheme={toggleTheme}
           fontSize={fontSize}
           onFontSizeChange={handleFontSizeChange}
-          onShowSettings={() => {
-            setShowSettings(true);
-            setSelectedBookId(null);
-          }}
+          onShowSettings={handleShowSettings}
         />
         <div
           className="sidebar-resizer"
@@ -123,12 +154,16 @@ function App() {
         </header>
 
         {showSettings ? (
-          <Settings onClose={() => setShowSettings(false)} />
+          <Settings onClose={handleBack} />
         ) : selectedBookId ? (
           <BookDetail
             bookId={selectedBookId}
-            onDelete={() => setSelectedBookId(null)}
-            onBack={() => setSelectedBookId(null)}
+            onDelete={() => {
+              // When deleting, we want to go back. 
+              // Since we pushed state to get here, simple back() works to return to list.
+              handleBack();
+            }}
+            onBack={handleBack}
           />
         ) : (
           <div className="empty-state-main">
