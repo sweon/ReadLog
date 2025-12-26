@@ -299,7 +299,7 @@ export const Settings: React.FC<SettingsProps> = ({ onClose }) => {
                         <div className="help-content">
                             <div className="help-item">
                                 <h3>{t('how_to_use')}</h3>
-                                <p>{t('how_to_use_desc')}</p>
+                                <p style={{ whiteSpace: 'pre-line', lineHeight: '1.6' }}>{t('how_to_use_desc')}</p>
                             </div>
                             <div className="help-item">
                                 <h3>{t('app_info')}</h3>
