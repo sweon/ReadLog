@@ -83,6 +83,7 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
 
     const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
     const stopPollingRef = useRef<boolean>(false);
+    const joinInProgress = useRef<boolean>(false);
 
     // Host: Start sharing
     const startHosting = async (silent = false) => {
@@ -149,22 +150,24 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
             const lines = text.trim().split('\n');
             for (const line of lines) {
                 if (!line) continue;
-                const data = JSON.parse(line);
-                if (data.event === 'message' && data.message.includes('|')) {
-                    const [respId, respPin] = data.message.split('|');
-                    // Received response!
-                    await startJoining(respId, respPin, true); // Pull response
-                    return; // Stop polling
-                }
+                try {
+                    const data = JSON.parse(line);
+                    if (data.event === 'message' && data.message.includes('|')) {
+                        const [respId, respPin] = data.message.split('|');
+                        // Received response!
+                        await startJoining(respId, respPin, true); // Pull response
+                        return; // Stop polling
+                    }
+                } catch (e) { /* ignore parse error on partial lines */ }
             }
 
             // If we are still in 'ready' or 'success' (first half), keep polling
-            if (!stopPollingRef.current) {
+            if (!stopPollingRef.current && !isFullyComplete) {
                 setTimeout(() => pollForResponse(targetRoom), 2000);
             }
         } catch (e) {
             console.error("Polling error", e);
-            if (!stopPollingRef.current) {
+            if (!stopPollingRef.current && !isFullyComplete) {
                 setTimeout(() => pollForResponse(targetRoom), 5000);
             }
         }
@@ -172,11 +175,12 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
 
     // Join: Connect and merge
     const startJoining = async (targetId: string, targetPin: string, isResponse = false, targetRoomId?: string) => {
-        if (!targetId || targetPin.length < 4) return;
+        if (!targetId || targetPin.length < 4 || joinInProgress.current) return;
+        joinInProgress.current = true;
 
         if (isResponse) {
-            setMsg(t('sync_connecting'));
             setStep('merging');
+            setMsg(t('sync_connecting'));
         } else {
             setStep('joining');
             setMsg(t('sync_connecting'));
@@ -199,22 +203,27 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
             const stats = await importDB(rawData);
 
             setSyncStats({ books: stats.booksImported, logs: stats.logsImported });
-            setStep('success');
 
             if (isResponse) {
                 setIsFullyComplete(true);
+                setStep('success');
                 setMsg(t('sync_fully_complete'));
             } else {
+                setStep('success');
                 setMsg(t('sync_devices'));
                 // AUTOMATIC RESPONSE: After merging, Joiner pushes their state back to Host
                 if (targetRoomId) {
                     await sendResponseBack(targetRoomId);
+                } else {
+                    setIsFullyComplete(true);
                 }
             }
         } catch (e: any) {
             console.error("Sync Error:", e);
             setStep('error');
-            setMsg(e.message === 'INVALID_PIN' ? 'Incorrect Passcode.' : 'Relay error. Please try again.');
+            setMsg(e.message === 'INVALID_PIN' ? 'Incorrect Passcode.' : 'Sync failed. Please try again.');
+        } finally {
+            joinInProgress.current = false;
         }
     };
 
@@ -243,13 +252,12 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                     method: 'POST',
                     body: `${id}|${newPin}`
                 });
-
-                setIsFullyComplete(true);
-                setMsg(t('sync_fully_complete'));
             }
         } catch (e) {
             console.error("Auto response failed", e);
-            // Non-blocking error, user can still finish
+        } finally {
+            setIsFullyComplete(true);
+            setMsg(t('sync_fully_complete'));
         }
     };
 
