@@ -23,6 +23,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
     const [sort, setSort] = useState<SortOption>('date-desc');
     const [isAdding, setIsAdding] = useState(false);
     const [showSync, setShowSync] = useState(false);
+    const [updateMessage, setUpdateMessage] = useState<string | null>(null);
+
+    const showStatus = (msg: string) => {
+        setUpdateMessage(msg);
+        setTimeout(() => setUpdateMessage(null), 3000);
+    };
 
     const {
         needRefresh: [needRefresh],
@@ -31,23 +37,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
 
     const handleUpdateCheck = async () => {
         if (needRefresh) {
-            if (confirm('A new version is available. Update now?')) {
-                updateServiceWorker(true);
-            }
+            showStatus('Updating to new version...');
+            updateServiceWorker(true);
         } else {
-            // Manually trigger a service worker update check
             if ('serviceWorker' in navigator) {
                 const registration = await navigator.serviceWorker.getRegistration();
                 if (registration) {
+                    showStatus('Checking for updates...');
                     await registration.update();
-                    // If an update is found, needRefresh will become true via the hook
-                    // We can give the user some feedback that we are checking
-                    alert('Checking for updates...');
+                    // Small delay to see if SW found anything
+                    setTimeout(() => {
+                        if (!needRefresh) {
+                            showStatus('App is up to date.');
+                        }
+                    }, 1500);
                 } else {
-                    alert('Service worker not found.');
+                    showStatus('Service worker not found.');
                 }
             } else {
-                alert('PWA is not supported in this browser.');
+                showStatus('PWA not supported.');
             }
         }
     };
@@ -157,6 +165,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                     </div>
                 </div>
             </div>
+
+            {updateMessage && (
+                <div className="status-notification">
+                    {updateMessage}
+                </div>
+            )}
 
             {
                 isAdding && (
