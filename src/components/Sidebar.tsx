@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
-import { DataManagement } from './DataManagement';
 import { SyncModal } from './SyncModal';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import './DataManagement.css';
@@ -14,11 +13,12 @@ interface SidebarProps {
     toggleTheme: () => void;
     fontSize: number;
     onFontSizeChange: (delta: number) => void;
+    onShowSettings: () => void;
 }
 
 type SortOption = 'date-desc' | 'date-asc' | 'title' | 'last-read';
 
-export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, theme, toggleTheme, fontSize, onFontSizeChange }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, theme, toggleTheme, fontSize, onFontSizeChange, onShowSettings }) => {
     const [search, setSearch] = useState('');
     const [sort, setSort] = useState<SortOption>('date-desc');
     const [isAdding, setIsAdding] = useState(false);
@@ -187,7 +187,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                         >
                             {theme === 'light' ? '🌙' : '☀️'}
                         </button>
-                        <DataManagement />
+                        <button
+                            className="icon-btn"
+                            onClick={onShowSettings}
+                            data-tooltip="Settings"
+                        >
+                            ⚙️
+                        </button>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,270 @@
+.settings-page {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding-bottom: 3rem;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.settings-header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 1rem;
+}
+
+.settings-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    color: var(--primary-color);
+}
+
+.settings-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+.settings-section h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+    opacity: 0.9;
+    border-left: 4px solid var(--primary-color);
+    padding-left: 0.75rem;
+}
+
+/* Summary Styles */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+}
+
+.summary-card {
+    background: var(--sidebar-bg);
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+}
+
+.summary-card .value {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.summary-card .label {
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
+/* Data Management Styles */
+.book-selection-list {
+    max-height: 150px;
+    overflow-y: auto;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.selection-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.selection-row:hover {
+    background: var(--bg-hover);
+}
+
+.data-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    background: var(--sidebar-bg);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.action-group h3 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.action-group p {
+    font-size: 0.9rem;
+    opacity: 0.7;
+    margin-bottom: 1rem;
+}
+
+.settings-action-btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid var(--border-color);
+}
+
+.settings-action-btn.primary {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+}
+
+.settings-action-btn.primary:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.settings-action-btn.secondary {
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+.settings-action-btn.secondary:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary-color);
+}
+
+.upload-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.upload-wrapper input[type="file"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+/* Language Styles */
+.language-options {
+    display: flex;
+    gap: 1rem;
+}
+
+.lang-btn {
+    flex: 1;
+    padding: 1rem;
+    border-radius: 10px;
+    border: 2px solid var(--border-color);
+    background: var(--sidebar-bg);
+    color: var(--text-color);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.lang-btn:hover {
+    border-color: var(--primary-color);
+}
+
+.lang-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* Help Styles */
+.help-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    background: var(--bg-color);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.help-item h3 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+}
+
+.help-item p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    opacity: 0.8;
+}
+
+/* Footer Styles */
+.settings-footer {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.legal-disclaimer {
+    font-size: 0.8rem;
+    opacity: 0.6;
+    line-height: 1.5;
+    background: var(--sidebar-bg);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.share-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: var(--shadow-md);
+}
+
+.share-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 123, 255, 0.3);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 600px) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .language-options {
+        flex-direction: column;
+    }
+}

@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { BookDetail } from './components/BookDetail';
+import { Settings } from './components/Settings';
 import './App.css';
 
 function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [fontSize, setFontSize] = useState<number>(16);
   const [selectedBookId, setSelectedBookId] = useState<number | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
     return Number(localStorage.getItem('sidebarWidth')) || 300;
   });
@@ -90,12 +92,19 @@ function App() {
     <div className={`app-container ${isResizing ? 'resizing' : ''}`}>
       <div className="sidebar-wrapper" style={{ width: sidebarWidth }}>
         <Sidebar
-          onSelectBook={setSelectedBookId}
-          selectedBookId={selectedBookId}
+          onSelectBook={(id) => {
+            setSelectedBookId(id);
+            setShowSettings(false);
+          }}
+          selectedBookId={showSettings ? null : selectedBookId}
           theme={theme}
           toggleTheme={toggleTheme}
           fontSize={fontSize}
           onFontSizeChange={handleFontSizeChange}
+          onShowSettings={() => {
+            setShowSettings(true);
+            setSelectedBookId(null);
+          }}
         />
         <div
           className="sidebar-resizer"
@@ -109,7 +118,9 @@ function App() {
           {/* Theme toggle moved to Sidebar */}
         </header>
 
-        {selectedBookId ? (
+        {showSettings ? (
+          <Settings />
+        ) : selectedBookId ? (
           <BookDetail bookId={selectedBookId} onDelete={() => setSelectedBookId(null)} />
         ) : (
           <div className="empty-state-main">
