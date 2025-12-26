@@ -67,7 +67,7 @@ const translations: Translations = {
     language: { en: 'Language', ko: '언어' },
     help_about: { en: 'Help & About', ko: '도움말 및 정보' },
     how_to_use: { en: 'How to use', ko: '사용 방법' },
-    how_to_use_desc: { en: 'Add a new book using the "+ Add" button in the sidebar. Track your daily progress by entering the current page number on the book\'s detail page. Use the sync feature to view your progress on multiple devices.', ko: '1. 사이드바의 "+ 추가" 버튼을 눌러 읽고 있는 책을 등록하세요.\n2. 목록에서 책을 선택하면 "책 진도 페이지"로 이동합니다.\n3. 읽은 페이지 수를 입력하여 독서 진도를 기록하세요.\n4. "데이터 관리" 메뉴에서 백업/복구 기능을 통해 소중한 독서 기록을 안전하게 보관하세요.\n5. 기기 동기화 기능을 사용하면 여러 기기에 동일한 기록을 할 수 있습니다.' },
+    how_to_use_desc: { en: 'Add a new book using the "+ Add" button in the sidebar. Track your daily progress by entering the current page number on the book\'s detail page. Use the sync feature to view your progress on multiple devices.', ko: '1. 사이드바의 "+ 추가" 버튼을 눌러 읽고 있는 책을 등록하세요.\n2. 목록에서 책을 선택하면 "책 진도 페이지"로 이동합니다.\n3. 읽은 페이지 수를 입력하여 독서 진도를 기록하세요.\n4. "데이터 관리" 메뉴에서 백업/복구 기능을 통해 소중한 독서 기록을 안전하게 보관하세요.\n5. 기기 동기화 기능을 사용하면 여러 기기에 동일한 기록을 공유할 수 있습니다.' },
     app_info: { en: 'App Information', ko: '앱 정보' },
     app_info_desc: { en: 'ReadLog v1.2.0 - A local-first, privacy-focused reading tracker.', ko: 'ReadLog v1.2.0 - 개인정보를 보호하는 로컬 기반 독서 추적기.' },
     legal_title: { en: 'Legal Disclaimer', ko: '법적 고지' },
