@@ -172,7 +172,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                         >
                             🔄
                         </button>
-                        <DataManagement />
                         <button
                             className={`icon-btn update-btn ${needRefresh ? 'has-update' : ''}`}
                             onClick={handleUpdateCheck}
@@ -187,6 +186,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
                         >
                             {theme === 'light' ? '🌙' : '☀️'}
                         </button>
+                        <DataManagement />
                     </div>
                 </div>
             </div>

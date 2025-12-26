@@ -120,7 +120,7 @@ export const DataManagement: React.FC = () => {
     // UI rendering
     if (!isOpen) {
         return (
-            <button className="settings-btn" onClick={() => setIsOpen(true)} data-tooltip="Data Management">
+            <button className="settings-btn" onClick={() => setIsOpen(true)} data-tooltip="Settings">
                 ⚙️
             </button>
         );
@@ -131,7 +131,7 @@ export const DataManagement: React.FC = () => {
 
             <div className="modal-content data-modal">
                 <div className="modal-header">
-                    <h3>Data Management</h3>
+                    <h3>Settings</h3>
                     <button className="close-btn" onClick={() => setIsOpen(false)}>×</button>
                 </div>
 
