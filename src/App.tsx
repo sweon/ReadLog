@@ -50,7 +50,11 @@ function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const handleBookSelect = (id: number) => {
+  const handleBookSelect = (id: number | null) => {
+    if (id === null) {
+      setSelectedBookId(null);
+      return;
+    }
     window.history.pushState({ bookId: id }, '', '');
     setSelectedBookId(id);
     setShowSettings(false);
