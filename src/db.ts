@@ -58,14 +58,16 @@ export const importDB = async (json: string) => {
             if (existingBook) {
                 localId = existingBook.id!;
                 // Update fields to the "most representative" (Union logic)
-                const extStart = new Date(extBook.startDate);
-                const extLast = new Date(extBook.lastReadDate);
+                const extStart = new Date(extBook.startDate).getTime();
+                const extLast = new Date(extBook.lastReadDate).getTime();
+                const localStart = new Date(existingBook.startDate).getTime();
+                const localLast = new Date(existingBook.lastReadDate).getTime();
 
                 await db.books.update(localId, {
                     // Take the earliest start date
-                    startDate: extStart < existingBook.startDate ? extStart : existingBook.startDate,
+                    startDate: new Date(Math.min(extStart, localStart)),
                     // Take the latest read date
-                    lastReadDate: extLast > existingBook.lastReadDate ? extLast : existingBook.lastReadDate,
+                    lastReadDate: new Date(Math.max(extLast, localLast)),
                     // If either is 'completed', the union is 'completed'
                     status: (extBook.status === 'completed' || existingBook.status === 'completed') ? 'completed' : 'reading'
                 });
@@ -91,21 +93,15 @@ export const importDB = async (json: string) => {
             const localBookId = bookMap.get(extLog.bookId);
             if (!localBookId) continue;
 
-            // UNION DEDUPLICATION:
-            // A session is considered the same if it's the same book, same page, and same DAY.
-            // This prevents duplicate entries when syncing multiple times or across devices with slightly different clocks.
+            // UNION DEDUPLICATION: Same book, same page, same DAY.
             const extDate = new Date(extLog.date);
-            const startOfDay = new Date(extDate);
-            startOfDay.setHours(0, 0, 0, 0);
-            const endOfDay = new Date(extDate);
-            endOfDay.setHours(23, 59, 59, 999);
+            const extDateStr = extDate.toDateString();
 
             const exists = await db.logs
                 .where('bookId').equals(localBookId)
                 .filter(l =>
                     l.page === extLog.page &&
-                    l.date >= startOfDay &&
-                    l.date <= endOfDay
+                    new Date(l.date).toDateString() === extDateStr
                 )
                 .first();
 

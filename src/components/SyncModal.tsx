@@ -129,17 +129,23 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
         setMsg('Connecting to sender...');
 
         try {
+            // RELIABILITY: Use 'raw' mode for direct content string retrieval
             const rawDlUrl = `https://tmpfiles.org/dl/${targetId}/sync.txt`;
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rawDlUrl)}`;
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rawDlUrl)}`;
 
             setMsg('Downloading sync package...');
             const res = await fetch(proxyUrl);
-            if (!res.ok) throw new Error("NOT_FOUND");
+            if (!res.ok) throw new Error("DOWNLOAD_ERROR");
 
-            const proxyData = await res.json();
-            const encrypted = proxyData.contents;
+            const encrypted = await res.text();
 
-            if (!encrypted) throw new Error("NOT_FOUND");
+            // Check if the payload looks like an actual encrypted string (long enough)
+            if (!encrypted || encrypted.length < 50) {
+                if (encrypted.includes("not found") || encrypted.includes("404")) {
+                    throw new Error("NOT_FOUND");
+                }
+                throw new Error("EMPTY_PACKAGE");
+            }
 
             setMsg('Merging into local library...');
             const rawData = await decryptData(encrypted, targetPin);
@@ -150,13 +156,16 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
             setStep('success');
             setMsg('Library Synced!');
         } catch (e: any) {
+            console.error("Sync Join Error:", e);
             setStep('error');
             if (e.message === 'INVALID_PIN') {
                 setMsg('Incorrect Passcode. Please check the sending device.');
             } else if (e.message === 'NOT_FOUND') {
                 setMsg('Session not found or expired. Host a new sync and try again.');
+            } else if (e.message === 'DOWNLOAD_ERROR') {
+                setMsg('Relay connection failed. Please try again in a moment.');
             } else {
-                setMsg('Download failed. Make sure both devices are online.');
+                setMsg(`Sync failed: ${e.message || 'Unknown network error'}`);
             }
         }
     };
