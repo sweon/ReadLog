@@ -300,7 +300,11 @@ export const Settings: React.FC<SettingsProps> = ({ onClose }) => {
                             <div className="help-item">
                                 <p style={{ marginBottom: '1.5rem', fontStyle: 'italic', opacity: 0.9 }}>{t('app_description')}</p>
                                 <h3>{t('how_to_use')}</h3>
-                                <p style={{ whiteSpace: 'pre-line', lineHeight: '1.6' }}>{t('how_to_use_desc')}</p>
+                                <div className="how-to-use-list">
+                                    {t('how_to_use_desc').split('\n').map((line, i) => (
+                                        <div key={i} className="how-to-use-item">{line}</div>
+                                    ))}
+                                </div>
                             </div>
                             <div className="help-item">
                                 <h3>{t('app_info')}</h3>
