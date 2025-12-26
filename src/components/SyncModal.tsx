@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { exportDB, importDB } from '../db';
 import { useLanguage } from '../contexts/LanguageContext';
 import './SyncModal.css';
@@ -69,10 +69,12 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
     const [mode, setMode] = useState<'host' | 'join'>('host');
     const [step, setStep] = useState<Step>('idle');
     const [msg, setMsg] = useState('');
-    const [syncKey, setSyncKey] = useState(''); // This is the file.io link or ID
+    const [syncKey, setSyncKey] = useState('');
     const [pin, setPin] = useState('');
     const [inputPin, setInputPin] = useState('');
     const [syncStats, setSyncStats] = useState<{ books: number; logs: number } | null>(null);
+    const [isScanning, setIsScanning] = useState(false);
+    const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
 
     // Host: Start sharing
     const startHosting = async () => {
@@ -81,14 +83,12 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
 
         try {
             const rawData = await exportDB();
-            // Generate a random 6-character PIN
             const newPin = Math.random().toString(36).substring(2, 8).toUpperCase();
             setPin(newPin);
 
             const encrypted = await encryptData(rawData, newPin);
 
             setMsg('Uploading to secure relay...');
-            // Upload to file.io (anonymous one-time storage)
             const formData = new FormData();
             const blob = new Blob([encrypted], { type: 'text/plain' });
             formData.append('file', blob, 'readlog_sync.txt');
@@ -101,7 +101,7 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
             if (!res.ok) throw new Error("Relay server busy.");
             const info = await res.json();
 
-            setSyncKey(info.key); // This is the short ID
+            setSyncKey(info.key);
             setStep('ready');
             setMsg('Ready to share!');
         } catch (e: any) {
@@ -136,24 +136,53 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
         }
     };
 
-    // Scanner Effect
-    useEffect(() => {
-        let scanner: Html5QrcodeScanner | null = null;
-        if (mode === 'join' && step === 'idle') {
-            scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }, false);
-            scanner.render((text) => {
-                // Expected format: KEY|PIN
-                if (text.includes('|')) {
-                    const [key, p] = text.split('|');
-                    scanner?.clear();
-                    startJoining(key, p);
-                } else {
-                    setMsg("Invalid QR Code format.");
-                }
-            }, () => { });
+    const stopScanner = async () => {
+        if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+            try {
+                await html5QrCodeRef.current.stop();
+                setIsScanning(false);
+            } catch (e) {
+                console.error("Failed to stop scanner", e);
+            }
         }
-        return () => { scanner?.clear(); };
-    }, [mode, step]);
+    };
+
+    const startScanner = async () => {
+        if (!html5QrCodeRef.current) {
+            html5QrCodeRef.current = new Html5Qrcode("reader");
+        }
+
+        if (html5QrCodeRef.current.isScanning) return;
+
+        try {
+            setIsScanning(true);
+            setMsg("");
+            await html5QrCodeRef.current.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: 250 },
+                (text) => {
+                    if (text.includes('|')) {
+                        const [key, p] = text.split('|');
+                        stopScanner();
+                        startJoining(key, p);
+                    } else {
+                        setMsg("Invalid QR Code format.");
+                    }
+                },
+                () => { }
+            );
+        } catch (err) {
+            console.error("Scanner Error", err);
+            setIsScanning(false);
+            setMsg("Camera permission denied or not available.");
+        }
+    };
+
+    useEffect(() => {
+        return () => {
+            stopScanner();
+        };
+    }, []);
 
     const qrValue = `${syncKey}|${pin}`;
 
@@ -162,14 +191,14 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
             <div className={`sync-modal step-${step}`}>
                 <div className="sync-header">
                     <h2>{t('sync_devices')}</h2>
-                    <button className="close-btn" onClick={onClose}>×</button>
+                    <button className="close-btn" onClick={() => { stopScanner(); onClose(); }}>×</button>
                 </div>
 
                 <div className="sync-tabs">
-                    <button className={`tab-btn ${mode === 'host' ? 'active' : ''}`} onClick={() => { setMode('host'); setStep('idle'); }}>
+                    <button className={`tab-btn ${mode === 'host' ? 'active' : ''}`} onClick={() => { stopScanner(); setMode('host'); setStep('idle'); setMsg(''); }}>
                         📤 Send Data
                     </button>
-                    <button className={`tab-btn ${mode === 'join' ? 'active' : ''}`} onClick={() => { setMode('join'); setStep('idle'); }}>
+                    <button className={`tab-btn ${mode === 'join' ? 'active' : ''}`} onClick={() => { setMode('join'); setStep('idle'); setMsg(''); }}>
                         📥 Receive Data
                     </button>
                 </div>
@@ -203,9 +232,21 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                                             />
                                         </div>
                                         <button className="premium-btn" onClick={() => startJoining(syncKey, inputPin)}>Join Room</button>
+                                        {msg && mode === 'join' && <p className="error-hint" style={{ color: '#ff6b6b', fontSize: '0.85rem', marginTop: '0.5rem' }}>{msg}</p>}
                                     </div>
                                     <div className="divider"><span>OR SCAN QR</span></div>
-                                    <div id="reader" className="scanner-box"></div>
+                                    <div className="scanner-container">
+                                        {!isScanning ? (
+                                            <button className="secondary-btn start-scan-btn" onClick={startScanner}>
+                                                📷 Start Camera Scan
+                                            </button>
+                                        ) : (
+                                            <button className="secondary-btn stop-scan-btn" onClick={stopScanner}>
+                                                ⏹️ Stop Camera
+                                            </button>
+                                        )}
+                                        <div id="reader" className="scanner-box" style={{ marginTop: '1rem', display: isScanning ? 'block' : 'none' }}></div>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -263,7 +304,7 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                             <div className="error-icon">⚠️</div>
                             <h3>Sync Failed</h3>
                             <p className="desc">{msg}</p>
-                            <button className="secondary-btn" onClick={() => setStep('idle')}>Try Again</button>
+                            <button className="secondary-btn" onClick={() => { stopScanner(); setStep('idle'); }}>Try Again</button>
                         </div>
                     )}
                 </div>

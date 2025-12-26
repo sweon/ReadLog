@@ -190,11 +190,32 @@
     opacity: 0.4;
 }
 
+.scanner-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.start-scan-btn {
+    background: var(--bg-hover) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+}
+
+.stop-scan-btn {
+    background: #fff0f0 !important;
+    border-color: #ff6b6b !important;
+    color: #ff6b6b !important;
+}
+
 .scanner-box {
     width: 100%;
     border-radius: 20px;
     overflow: hidden;
     background: #000;
+    min-height: 250px;
+    border: 1px solid var(--border-color);
 }
 
 /* Loading */
