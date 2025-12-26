@@ -87,7 +87,7 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
 
             const encrypted = await encryptData(rawData, newPin);
 
-            setMsg('Uploading sync package...');
+            setMsg('Uploading through secure relay...');
             const formData = new FormData();
             const blob = new Blob([encrypted], { type: 'text/plain' });
             formData.append('file', blob, 'sync.txt');
@@ -109,7 +109,7 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
             setMsg('Connection Ready');
         } catch (e: any) {
             setStep('error');
-            setMsg(e.message === 'RELAY_SERVER_BUSY' ? 'Server is busy. Try again in a moment.' : 'Upload failed. Check your internet.');
+            setMsg('Failed to create sync session. Check your internet connection.');
         }
     };
 
@@ -117,17 +117,27 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
     const startJoining = async (targetId: string, targetPin: string) => {
         if (!targetId || targetPin.length < 4) return;
         setStep('joining');
-        setMsg('Downloading sync package...');
+        setMsg('Connecting to sender...');
 
         try {
-            const res = await fetch(`https://tmpfiles.org/dl/${targetId}/sync.txt`);
-            if (!res.ok) throw new Error("NOT_FOUND");
-            const encrypted = await res.text();
+            // RELIABILITY FIX: Use allorigins CORS proxy to fetch the raw data from tmpfiles
+            // tmpfiles.org blocks direct fetch GET from browsers, but CORS proxy bypasses this.
+            const rawDlUrl = `https://tmpfiles.org/dl/${targetId}/sync.txt`;
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rawDlUrl)}`;
 
-            setMsg('Verifying Passcode...');
+            setMsg('Downloading sync package...');
+            const res = await fetch(proxyUrl);
+            if (!res.ok) throw new Error("NOT_FOUND");
+
+            const proxyData = await res.json();
+            const encrypted = proxyData.contents;
+
+            if (!encrypted) throw new Error("NOT_FOUND");
+
+            setMsg('Verifying passcode...');
             const rawData = await decryptData(encrypted, targetPin);
 
-            setMsg('Merging folders and logs...');
+            setMsg('Applying folders and logs...');
             const stats = await importDB(rawData);
 
             setSyncStats({ books: stats.booksImported, logs: stats.logsImported });
@@ -135,11 +145,11 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
         } catch (e: any) {
             setStep('error');
             if (e.message === 'INVALID_PIN') {
-                setMsg('Incorrect Passcode. Check the sender device.');
+                setMsg('Incorrect Passcode. Please check the sending device.');
             } else if (e.message === 'NOT_FOUND') {
-                setMsg('Room ID not found or expired.');
+                setMsg('Session not found or expired. Host a new sync and try again.');
             } else {
-                setMsg('Download failed. Check your internet connection.');
+                setMsg('Download failed. Make sure both devices are online.');
             }
         }
     };
@@ -182,12 +192,12 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                             setMsg("Invalid QR code format.");
                         }
                     },
-                    () => { /* quiet scan failure for each frame */ }
+                    () => { /* quiet scan failure */ }
                 );
             } catch (err) {
                 console.error("Scanner Start Error", err);
                 setIsScanning(false);
-                setMsg("Camera initialization failed. Please try manual entry.");
+                setMsg("Camera access denied or failed.");
             }
         }, 500);
     };
@@ -319,7 +329,7 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                                     </div>
                                 </div>
                             </div>
-                            <p className="hint">This connection will expire in 5 minutes.</p>
+                            <p className="hint">This session expires in 5 minutes.</p>
                         </div>
                     )}
 
