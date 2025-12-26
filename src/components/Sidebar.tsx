@@ -41,13 +41,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
             r && setInterval(() => {
                 r.update();
             }, 60 * 60 * 1000);
+        },
+        onNeedRefresh() {
+            // If we are already in the update check flow, it might be better to let the user know
+            console.log('New content available, preparing to update...');
         }
     });
 
     const handleUpdateCheck = async () => {
         // If an update is already detected (indicator is red)
         if (needRefresh) {
-            showStatus('Installing updates...');
+            showStatus(t('installing_update') || 'Installing updates...');
             setNeedRefresh(false); // Clear indicator immediately for feedback
             updateServiceWorker(true);
             return;
@@ -65,21 +69,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
             return;
         }
 
-        showStatus('Checking for updates...');
+        showStatus(t('check_updates') || 'Checking for updates...');
 
         try {
             await registration.update();
 
             // Wait a bit for the service worker to discover the new content
             // The 'needRefresh' state from useRegisterSW should update automatically
-            // But we add a small delay to provide feedback if nothing was found
             setTimeout(() => {
-                // If the state hasn't changed to true, it means we are on the latest
                 const sw = registration.waiting || registration.installing;
                 if (!sw && !needRefresh) {
-                    showStatus('Already on the latest version.');
-                } else if (needRefresh) {
-                    showStatus('New version available!');
+                    showStatus(t('already_latest') || 'Already on the latest version.');
+                } else if (needRefresh || sw) {
+                    showStatus(t('update_found_reloading') || 'New version found! Reloading...');
+                    // Automatically trigger the update and reload
+                    setTimeout(() => {
+                        updateServiceWorker(true);
+                    }, 1000);
                 }
             }, 2000);
         } catch (err) {

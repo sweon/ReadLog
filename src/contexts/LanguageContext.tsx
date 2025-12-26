@@ -23,6 +23,9 @@ const translations: Translations = {
     theme_dark: { en: 'Switch to Dark Mode', ko: '다크 모드' },
     settings: { en: 'Settings', ko: '설정' },
     no_books: { en: 'No books found.', ko: '도서가 없습니다.' },
+    installing_update: { en: 'Installing updates...', ko: '업데이트 설치 중...' },
+    already_latest: { en: 'Already on the latest version.', ko: '이미 최신 버전입니다.' },
+    update_found_reloading: { en: 'New version found! Reloading...', ko: '새 버전 발견! 재시작 중...' },
 
     // Add Book Form
     book_title: { en: 'Book Title', ko: '도서 제목' },
