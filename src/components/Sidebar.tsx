@@ -36,11 +36,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
         needRefresh: [needRefresh, setNeedRefresh],
         updateServiceWorker,
     } = useRegisterSW({
-        onRegistered(r) {
-            // Check for updates periodically every hour
-            r && setInterval(() => {
-                r.update();
-            }, 60 * 60 * 1000);
+        onRegistered() {
+            console.log('SW Registered');
         },
         onNeedRefresh() {
             // If we are already in the update check flow, it might be better to let the user know
