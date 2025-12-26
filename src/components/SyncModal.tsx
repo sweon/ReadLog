@@ -91,9 +91,9 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
             setMsg('Uploading to secure relay...');
             const formData = new FormData();
             const blob = new Blob([encrypted], { type: 'text/plain' });
-            formData.append('file', blob, 'readlog_sync.txt');
+            formData.append('file', blob, 'sync.txt');
 
-            const res = await fetch('https://file.io/?expires=5m', {
+            const res = await fetch('https://tmpfiles.org/api/v1/upload', {
                 method: 'POST',
                 body: formData
             });
@@ -101,7 +101,12 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
             if (!res.ok) throw new Error("Relay server busy.");
             const info = await res.json();
 
-            setSyncKey(info.key);
+            // Extract the ID from the URL: https://tmpfiles.org/ID/sync.txt
+            const url = info.data.url;
+            const parts = url.split('/');
+            const id = parts[parts.length - 2];
+
+            setSyncKey(id);
             setStep('ready');
             setMsg('Ready to share!');
         } catch (e: any) {
@@ -117,7 +122,8 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
         setMsg('Connecting to relay...');
 
         try {
-            const res = await fetch(`https://file.io/${targetId}`);
+            // Use the direct download URL format
+            const res = await fetch(`https://tmpfiles.org/dl/${targetId}/sync.txt`);
             if (!res.ok) throw new Error("Sync code expired or invalid.");
             const encrypted = await res.text();
 
@@ -198,7 +204,7 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                     <button className={`tab-btn ${mode === 'host' ? 'active' : ''}`} onClick={() => { stopScanner(); setMode('host'); setStep('idle'); setMsg(''); }}>
                         📤 Send Data
                     </button>
-                    <button className={`tab-btn ${mode === 'join' ? 'active' : ''}`} onClick={() => { setMode('join'); setStep('idle'); setMsg(''); }}>
+                    <button className={`tab-btn ${mode === 'join' ? 'active' : ''}`} onClick={() => { stopScanner(); setMode('join'); setStep('idle'); setMsg(''); }}>
                         📥 Receive Data
                     </button>
                 </div>
@@ -275,7 +281,7 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                                     </div>
                                 </div>
                             </div>
-                            <p className="hint">The link expires in 5 minutes and works only once.</p>
+                            <p className="hint">The link expires soon and works only once.</p>
                         </div>
                     )}
 
