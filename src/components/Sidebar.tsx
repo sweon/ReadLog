@@ -72,21 +72,36 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
 
         let updateDetected = false;
 
+        // Force reload when controller changes (backup if hook doesn't trigger)
+        const handleControllerChange = () => {
+            window.location.reload();
+        };
+
+        const activateUpdate = (worker: ServiceWorker) => {
+            showStatus(t('update_found_reloading') || 'New version found! Reloading...');
+            setNeedRefresh(false);
+
+            // Ensure we listen for activation
+            if (!navigator.serviceWorker.controller) {
+                // If no controller, just reload? No, waiting acts as one.
+            }
+            navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+
+            // Send skip waiting
+            worker.postMessage({ type: 'SKIP_WAITING' });
+        };
+
         // Listener for new worker
         const handleUpdateFound = () => {
             updateDetected = true;
             const newWorker = registration.installing;
 
             if (newWorker) {
-                // Determine if we should notify immediately or wait for install
                 showStatus(t('installing_update') || 'Installing updates...');
 
                 newWorker.addEventListener('statechange', () => {
                     if (newWorker.state === 'installed') {
-                        // Worker is installed and waiting to activate
-                        showStatus(t('update_found_reloading') || 'New version found! Reloading...');
-                        setNeedRefresh(false);
-                        setTimeout(() => updateServiceWorker(true), 500);
+                        activateUpdate(newWorker);
                     }
                 });
             }
@@ -104,29 +119,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
 
                 if (waiting) {
                     updateDetected = true;
-                    showStatus(t('update_found_reloading') || 'New version found! Reloading...');
-                    setNeedRefresh(false);
-                    setTimeout(() => updateServiceWorker(true), 500);
+                    activateUpdate(waiting);
                 } else if (installing) {
                     updateDetected = true;
-                    // Installing logic is handled by listener or we can attach here if listener missed (unlikely)
                     showStatus(t('installing_update') || 'Installing updates...');
                     installing.addEventListener('statechange', () => {
                         if (installing.state === 'installed') {
-                            showStatus(t('update_found_reloading') || 'New version found! Reloading...');
-                            setNeedRefresh(false);
-                            setTimeout(() => updateServiceWorker(true), 500);
+                            activateUpdate(installing);
                         }
                     });
                 }
             }
 
-            // Grace period check: if after 3 seconds nothing has been detected, assume latest
-            // This covers race conditions where update() resolves before event fires or vice versa
+            // Grace period check
             setTimeout(() => {
                 const isStillProcessing = registration.installing || registration.waiting;
                 if (!updateDetected && !needRefresh && !isStillProcessing) {
                     registration.removeEventListener('updatefound', handleUpdateFound);
+                    navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
                     showStatus(t('already_latest') || 'Already on the latest version.');
                 }
             }, 3000);
@@ -134,6 +144,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
         } catch (err) {
             console.error('Update check failed:', err);
             registration.removeEventListener('updatefound', handleUpdateFound);
+            navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
             showStatus('Failed to check for updates.');
         }
     };
