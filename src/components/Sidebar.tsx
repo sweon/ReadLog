@@ -49,15 +49,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
     });
 
     const handleUpdateCheck = async () => {
-        // If an update is already detected (indicator is red)
+        // If an update is already detected by the hook
         if (needRefresh) {
             showStatus(t('installing_update') || 'Installing updates...');
-            setNeedRefresh(false); // Clear indicator immediately for feedback
             updateServiceWorker(true);
             return;
         }
 
-        // Otherwise, manually trigger a check
         if (!('serviceWorker' in navigator)) {
             showStatus('PWA not supported.');
             return;
@@ -74,20 +72,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
         try {
             await registration.update();
 
-            // Wait a bit for the service worker to discover the new content
-            // The 'needRefresh' state from useRegisterSW should update automatically
-            setTimeout(() => {
-                const sw = registration.waiting || registration.installing;
-                if (!sw && !needRefresh) {
-                    showStatus(t('already_latest') || 'Already on the latest version.');
-                } else if (needRefresh || sw) {
+            // Give the browser more time to process the update and trigger the needRefresh state
+            // and check again for the waiting/installing workers.
+            setTimeout(async () => {
+                const updatedRegistration = await navigator.serviceWorker.getRegistration();
+                const hasWaiting = updatedRegistration?.waiting || updatedRegistration?.installing;
+
+                // We check both the Hook state 'needRefresh' and the raw Registration state
+                if (needRefresh || hasWaiting) {
                     showStatus(t('update_found_reloading') || 'New version found! Reloading...');
-                    // Automatically trigger the update and reload
                     setTimeout(() => {
                         updateServiceWorker(true);
                     }, 1000);
+                } else {
+                    showStatus(t('already_latest') || 'Already on the latest version.');
                 }
-            }, 2000);
+            }, 3000); // Increased delay
         } catch (err) {
             console.error('Update check failed:', err);
             showStatus('Failed to check for updates.');
