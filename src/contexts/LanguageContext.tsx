@@ -75,7 +75,7 @@ const translations: Translations = {
     app_info: { en: 'App Information', ko: '앱 정보' },
     app_info_desc: { en: 'ReadLog v1.2.0 • Local-only · No server Book Reading Progress Logger', ko: 'ReadLog v1.2.0 • Local-only · No server Book Reading Progress Logger' },
     legal_title: { en: 'Legal Disclaimer', ko: '법적 고지' },
-    legal_desc: { en: 'This application is provided "as is" without any warranties. Your data is stored locally in your browser and is your responsibility. We do not collect or store your personal information on our servers.', ko: '이 애플리케이션은 명시적 또는 묵시적인 보증 없이 "있는 그대로" 제공됩니다. 모든 데이터는 브라우저에 로컬로 저장되며 귀하의 책임하에 관리됩니다. 당사는 서버에 어떠한 개인정보도 수집하거나 저장하지 않습니다.' },
+    legal_desc: { en: 'This application is provided "as is" without any warranties. Your data is stored locally in your browser and is your responsibility.', ko: '이 애플리케이션은 명시적 또는 묵시적인 보증 없이 "있는 그대로" 제공됩니다. 모든 데이터는 브라우저에 로컬로 저장되며 귀하의 책임하에 관리됩니다.' },
     share: { en: 'Share with Friends', ko: '친구에게 공유하기' },
     back: { en: 'Back', ko: '뒤로' },
     import_success: { en: 'Import successful!', ko: '성공적으로 가져왔습니다!' },
