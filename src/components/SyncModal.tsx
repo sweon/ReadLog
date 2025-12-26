@@ -28,7 +28,6 @@ const encryptData = async (data: string, pin: string) => {
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encodedData);
 
-    // Combine SALT + IV + ENCRYPTED_DATA
     const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
     combined.set(salt, 0);
     combined.set(iv, salt.length);
@@ -58,7 +57,7 @@ const decryptData = async (base64Data: string, pin: string) => {
         const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, encrypted);
         return new TextDecoder().decode(decrypted);
     } catch (e) {
-        throw new Error("Invalid PIN or corrupted data.");
+        throw new Error("Invalid Passcode or corrupted data.");
     }
 };
 
@@ -79,16 +78,17 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
     // Host: Start sharing
     const startHosting = async () => {
         setStep('preparing');
-        setMsg('Encrypting your book logs...');
+        setMsg('Encrypting your book library...');
 
         try {
             const rawData = await exportDB();
-            const newPin = Math.random().toString(36).substring(2, 8).toUpperCase();
+            // Generate a 4-digit numeric PIN for better mobile input
+            const newPin = Math.floor(1000 + Math.random() * 9000).toString();
             setPin(newPin);
 
             const encrypted = await encryptData(rawData, newPin);
 
-            setMsg('Uploading to secure relay...');
+            setMsg('Connecting to relay server...');
             const formData = new FormData();
             const blob = new Blob([encrypted], { type: 'text/plain' });
             formData.append('file', blob, 'sync.txt');
@@ -98,10 +98,9 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                 body: formData
             });
 
-            if (!res.ok) throw new Error("Relay server busy.");
+            if (!res.ok) throw new Error("Server is currently busy. Please try again in 1 minute.");
             const info = await res.json();
 
-            // Extract the ID from the URL: https://tmpfiles.org/ID/sync.txt
             const url = info.data.url;
             const parts = url.split('/');
             const id = parts[parts.length - 2];
@@ -119,26 +118,24 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
     const startJoining = async (targetId: string, targetPin: string) => {
         if (!targetId || targetPin.length < 4) return;
         setStep('joining');
-        setMsg('Connecting to relay...');
+        setMsg('Downloading data...');
 
         try {
-            // Use the direct download URL format
             const res = await fetch(`https://tmpfiles.org/dl/${targetId}/sync.txt`);
-            if (!res.ok) throw new Error("Sync code expired or invalid.");
+            if (!res.ok) throw new Error("Invalid Room ID or the session has expired.");
             const encrypted = await res.text();
 
-            setMsg('Decrypting data...');
-            const rawData = await decryptData(encrypted, targetPin.toUpperCase());
+            setMsg('Verifying passcode...');
+            const rawData = await decryptData(encrypted, targetPin);
 
-            setMsg('Merging library...');
+            setMsg('Applying changes to library...');
             const stats = await importDB(rawData);
 
             setSyncStats({ books: stats.booksImported, logs: stats.logsImported });
             setStep('success');
-            setMsg('Sync Success!');
         } catch (e: any) {
             setStep('error');
-            setMsg(e.message);
+            setMsg(e.message === 'Invalid Passcode or corrupted data.' ? 'Incorrect Passcode. Please check again.' : e.message);
         }
     };
 
@@ -178,9 +175,8 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                 () => { }
             );
         } catch (err) {
-            console.error("Scanner Error", err);
             setIsScanning(false);
-            setMsg("Camera permission denied or not available.");
+            setMsg("Could not access camera. Please check permissions or type manually.");
         }
     };
 
@@ -201,11 +197,17 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                 </div>
 
                 <div className="sync-tabs">
-                    <button className={`tab-btn ${mode === 'host' ? 'active' : ''}`} onClick={() => { stopScanner(); setMode('host'); setStep('idle'); setMsg(''); }}>
-                        📤 Send Data
+                    <button
+                        className={`tab-btn ${mode === 'host' ? 'active' : ''}`}
+                        onClick={() => { stopScanner(); setMode('host'); setStep('idle'); setMsg(''); }}
+                    >
+                        📤 {t('sync_devices')} (Send)
                     </button>
-                    <button className={`tab-btn ${mode === 'join' ? 'active' : ''}`} onClick={() => { stopScanner(); setMode('join'); setStep('idle'); setMsg(''); }}>
-                        📥 Receive Data
+                    <button
+                        className={`tab-btn ${mode === 'join' ? 'active' : ''}`}
+                        onClick={() => { stopScanner(); setMode('join'); setStep('idle'); setMsg(''); }}
+                    >
+                        📥 {t('sync_devices')} (Receive)
                     </button>
                 </div>
 
@@ -215,36 +217,49 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                             {mode === 'host' ? (
                                 <div className="host-init">
                                     <div className="sync-illustration">🛰️</div>
-                                    <p className="desc">Generate a one-time secure link to sync your logs with another device.</p>
-                                    <button className="premium-btn" onClick={startHosting}>Create Sync Session</button>
+                                    <p className="desc">{t('sync_data_desc')}</p>
+                                    <button className="premium-btn" onClick={startHosting}>Generate Sync Codes</button>
                                 </div>
                             ) : (
                                 <div className="join-init">
+                                    <p className="instruction-text">{t('sync_how_to_join')}</p>
                                     <div className="manual-form">
                                         <div className="input-group">
-                                            <input
-                                                type="text"
-                                                placeholder="Enter Room ID"
-                                                value={syncKey}
-                                                onChange={e => setSyncKey(e.target.value)}
-                                            />
-                                            <input
-                                                type="text"
-                                                placeholder="Enter PIN"
-                                                className="pin-input"
-                                                value={inputPin}
-                                                maxLength={8}
-                                                onChange={e => setInputPin(e.target.value)}
-                                            />
+                                            <div className="input-field">
+                                                <label>{t('sync_room_id')}</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="e.g. 17210191"
+                                                    value={syncKey}
+                                                    onChange={e => setSyncKey(e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="input-field">
+                                                <label>{t('sync_passcode')}</label>
+                                                <input
+                                                    type="tel"
+                                                    placeholder="4-digit code"
+                                                    className="pin-input"
+                                                    value={inputPin}
+                                                    maxLength={4}
+                                                    onChange={e => setInputPin(e.target.value.replace(/\D/g, ''))}
+                                                />
+                                            </div>
                                         </div>
-                                        <button className="premium-btn" onClick={() => startJoining(syncKey, inputPin)}>Join Room</button>
-                                        {msg && mode === 'join' && <p className="error-hint" style={{ color: '#ff6b6b', fontSize: '0.85rem', marginTop: '0.5rem' }}>{msg}</p>}
+                                        <button
+                                            className="premium-btn"
+                                            onClick={() => startJoining(syncKey, inputPin)}
+                                            disabled={!syncKey || inputPin.length < 4}
+                                        >
+                                            Connect & Sync
+                                        </button>
+                                        {msg && <p className="error-hint" style={{ color: '#ff6b6b', fontSize: '0.85rem', marginTop: '1rem' }}>{msg}</p>}
                                     </div>
-                                    <div className="divider"><span>OR SCAN QR</span></div>
+                                    <div className="divider"><span>OR SCAN QR CODE</span></div>
                                     <div className="scanner-container">
                                         {!isScanning ? (
                                             <button className="secondary-btn start-scan-btn" onClick={startScanner}>
-                                                📷 Start Camera Scan
+                                                📷 Scan QR Code
                                             </button>
                                         ) : (
                                             <button className="secondary-btn stop-scan-btn" onClick={stopScanner}>
@@ -262,26 +277,27 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                         <div className="loading-view">
                             <div className="sync-spinner"></div>
                             <p className="status-msg">{msg}</p>
-                            <p className="pulsing-text">Please keep this window open</p>
+                            <p className="pulsing-text">Please keep this window open...</p>
                         </div>
                     )}
 
                     {step === 'ready' && (
                         <div className="ready-view animate-in">
+                            <p className="instruction-text" style={{ marginBottom: '1.5rem' }}>{t('sync_how_to_host')}</p>
                             <div className="qr-card">
                                 <QRCodeCanvas value={qrValue} size={220} includeMargin={true} />
                                 <div className="id-details">
                                     <div className="id-item">
-                                        <span className="label">Room ID</span>
+                                        <span className="label">{t('sync_room_id')}</span>
                                         <code className="val">{syncKey}</code>
                                     </div>
                                     <div className="id-item">
-                                        <span className="label">Encryption PIN</span>
+                                        <span className="label">{t('sync_passcode')}</span>
                                         <code className="val pin">{pin}</code>
                                     </div>
                                 </div>
                             </div>
-                            <p className="hint">The link expires soon and works only once.</p>
+                            <p className="hint">This session expires in 5 minutes.</p>
                         </div>
                     )}
 
@@ -301,7 +317,7 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                                     </div>
                                 </div>
                             )}
-                            <button className="premium-btn" onClick={() => window.location.reload()}>Reload Library</button>
+                            <button className="premium-btn" onClick={() => window.location.reload()}>Finish & Reload</button>
                         </div>
                     )}
 
@@ -309,8 +325,8 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                         <div className="error-view animate-in">
                             <div className="error-icon">⚠️</div>
                             <h3>Sync Failed</h3>
-                            <p className="desc">{msg}</p>
-                            <button className="secondary-btn" onClick={() => { stopScanner(); setStep('idle'); }}>Try Again</button>
+                            <p className="desc" style={{ marginBottom: '2rem' }}>{msg}</p>
+                            <button className="secondary-btn" onClick={() => { stopScanner(); setStep('idle'); }}>Go Back</button>
                         </div>
                     )}
                 </div>

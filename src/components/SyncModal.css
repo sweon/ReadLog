@@ -15,14 +15,15 @@
 
 .sync-modal {
     background: var(--bg-color);
-    width: 90%;
+    width: 95%;
     max-width: 420px;
+    max-height: 90vh;
     border-radius: 28px;
-    padding: 2.5rem 2rem;
+    padding: 2rem 1.5rem;
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
     border: 1px solid var(--border-color);
     position: relative;
-    overflow: hidden;
+    overflow-y: auto;
 }
 
 .sync-header {
@@ -123,6 +124,18 @@
     margin-bottom: 2rem;
 }
 
+.instruction-text {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    opacity: 0.8;
+    background: var(--bg-hover);
+    padding: 1rem;
+    border-radius: 12px;
+    border-left: 4px solid var(--primary-color);
+    text-align: left;
+    margin-bottom: 2.5rem;
+}
+
 .premium-btn {
     width: 100%;
     padding: 1.1rem;
@@ -137,16 +150,35 @@
     transition: 0.3s;
 }
 
-.premium-btn:hover {
+.premium-btn:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 15px 30px rgba(0, 123, 255, 0.35);
+}
+
+.premium-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.input-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: left;
+}
+
+.input-field label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    opacity: 0.5;
+    text-transform: uppercase;
 }
 
 .input-group {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    margin-bottom: 1.25rem;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
 }
 
 .input-group input {
@@ -168,8 +200,9 @@
 
 .pin-input {
     font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 2px;
-    text-transform: uppercase;
+    letter-spacing: 4px;
+    text-align: center;
+    font-size: 1.25rem !important;
 }
 
 .divider {
@@ -199,13 +232,13 @@
 
 .start-scan-btn {
     background: var(--bg-hover) !important;
-    border-color: var(--primary-color) !important;
+    border: 1px solid var(--primary-color) !important;
     color: var(--primary-color) !important;
 }
 
 .stop-scan-btn {
     background: #fff0f0 !important;
-    border-color: #ff6b6b !important;
+    border: 1px solid #ff6b6b !important;
     color: #ff6b6b !important;
 }
 
