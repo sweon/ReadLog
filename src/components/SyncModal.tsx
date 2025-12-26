@@ -9,7 +9,7 @@ interface SyncModalProps {
     onClose: () => void;
 }
 
-// Security Helper: Simple AES encryption using PIN as secret
+// Security Helper: AES-GCM encryption
 const encryptData = async (data: string, pin: string) => {
     const encoder = new TextEncoder();
     const encodedData = encoder.encode(data);
@@ -57,7 +57,7 @@ const decryptData = async (base64Data: string, pin: string) => {
         const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, encrypted);
         return new TextDecoder().decode(decrypted);
     } catch (e) {
-        throw new Error("Invalid Passcode or corrupted data.");
+        throw new Error("INVALID_PIN");
     }
 };
 
@@ -78,17 +78,16 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
     // Host: Start sharing
     const startHosting = async () => {
         setStep('preparing');
-        setMsg('Encrypting your book library...');
+        setMsg('Encrypting library data...');
 
         try {
             const rawData = await exportDB();
-            // Generate a 4-digit numeric PIN for better mobile input
             const newPin = Math.floor(1000 + Math.random() * 9000).toString();
             setPin(newPin);
 
             const encrypted = await encryptData(rawData, newPin);
 
-            setMsg('Connecting to relay server...');
+            setMsg('Uploading sync package...');
             const formData = new FormData();
             const blob = new Blob([encrypted], { type: 'text/plain' });
             formData.append('file', blob, 'sync.txt');
@@ -98,7 +97,7 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                 body: formData
             });
 
-            if (!res.ok) throw new Error("Server is currently busy. Please try again in 1 minute.");
+            if (!res.ok) throw new Error("RELAY_SERVER_BUSY");
             const info = await res.json();
 
             const url = info.data.url;
@@ -107,10 +106,10 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
 
             setSyncKey(id);
             setStep('ready');
-            setMsg('Ready to share!');
+            setMsg('Connection Ready');
         } catch (e: any) {
             setStep('error');
-            setMsg(e.message);
+            setMsg(e.message === 'RELAY_SERVER_BUSY' ? 'Server is busy. Try again in a moment.' : 'Upload failed. Check your internet.');
         }
     };
 
@@ -118,24 +117,30 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
     const startJoining = async (targetId: string, targetPin: string) => {
         if (!targetId || targetPin.length < 4) return;
         setStep('joining');
-        setMsg('Downloading data...');
+        setMsg('Downloading sync package...');
 
         try {
             const res = await fetch(`https://tmpfiles.org/dl/${targetId}/sync.txt`);
-            if (!res.ok) throw new Error("Invalid Room ID or the session has expired.");
+            if (!res.ok) throw new Error("NOT_FOUND");
             const encrypted = await res.text();
 
-            setMsg('Verifying passcode...');
+            setMsg('Verifying Passcode...');
             const rawData = await decryptData(encrypted, targetPin);
 
-            setMsg('Applying changes to library...');
+            setMsg('Merging folders and logs...');
             const stats = await importDB(rawData);
 
             setSyncStats({ books: stats.booksImported, logs: stats.logsImported });
             setStep('success');
         } catch (e: any) {
             setStep('error');
-            setMsg(e.message === 'Invalid Passcode or corrupted data.' ? 'Incorrect Passcode. Please check again.' : e.message);
+            if (e.message === 'INVALID_PIN') {
+                setMsg('Incorrect Passcode. Check the sender device.');
+            } else if (e.message === 'NOT_FOUND') {
+                setMsg('Room ID not found or expired.');
+            } else {
+                setMsg('Download failed. Check your internet connection.');
+            }
         }
     };
 
@@ -145,39 +150,46 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                 await html5QrCodeRef.current.stop();
                 setIsScanning(false);
             } catch (e) {
-                console.error("Failed to stop scanner", e);
+                console.error("Scanner Stop Error", e);
             }
         }
     };
 
     const startScanner = async () => {
-        if (!html5QrCodeRef.current) {
-            html5QrCodeRef.current = new Html5Qrcode("reader");
-        }
+        setIsScanning(true);
+        setMsg("");
 
-        if (html5QrCodeRef.current.isScanning) return;
+        setTimeout(async () => {
+            try {
+                const element = document.getElementById("reader");
+                if (!element) throw new Error("SCANNER_DOM_NOT_READY");
 
-        try {
-            setIsScanning(true);
-            setMsg("");
-            await html5QrCodeRef.current.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: 250 },
-                (text) => {
-                    if (text.includes('|')) {
-                        const [key, p] = text.split('|');
-                        stopScanner();
-                        startJoining(key, p);
-                    } else {
-                        setMsg("Invalid QR Code format.");
-                    }
-                },
-                () => { }
-            );
-        } catch (err) {
-            setIsScanning(false);
-            setMsg("Could not access camera. Please check permissions or type manually.");
-        }
+                if (!html5QrCodeRef.current) {
+                    html5QrCodeRef.current = new Html5Qrcode("reader");
+                }
+
+                if (html5QrCodeRef.current.isScanning) return;
+
+                await html5QrCodeRef.current.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: 250 },
+                    (text) => {
+                        if (text.includes('|')) {
+                            const [key, p] = text.split('|');
+                            stopScanner();
+                            startJoining(key, p);
+                        } else {
+                            setMsg("Invalid QR code format.");
+                        }
+                    },
+                    () => { /* quiet scan failure for each frame */ }
+                );
+            } catch (err) {
+                console.error("Scanner Start Error", err);
+                setIsScanning(false);
+                setMsg("Camera initialization failed. Please try manual entry.");
+            }
+        }, 500);
     };
 
     useEffect(() => {
@@ -231,13 +243,15 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                                                     type="text"
                                                     placeholder="e.g. 17210191"
                                                     value={syncKey}
-                                                    onChange={e => setSyncKey(e.target.value)}
+                                                    onChange={e => setSyncKey(e.target.value.trim())}
                                                 />
                                             </div>
                                             <div className="input-field">
                                                 <label>{t('sync_passcode')}</label>
                                                 <input
                                                     type="tel"
+                                                    pattern="[0-9]*"
+                                                    inputMode="numeric"
                                                     placeholder="4-digit code"
                                                     className="pin-input"
                                                     value={inputPin}
@@ -253,7 +267,7 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                                         >
                                             Connect & Sync
                                         </button>
-                                        {msg && <p className="error-hint" style={{ color: '#ff6b6b', fontSize: '0.85rem', marginTop: '1rem' }}>{msg}</p>}
+                                        {msg && mode === 'join' && <p className="error-hint" style={{ color: '#ff6b6b', fontSize: '0.85rem', marginTop: '1rem' }}>{msg}</p>}
                                     </div>
                                     <div className="divider"><span>OR SCAN QR CODE</span></div>
                                     <div className="scanner-container">
@@ -266,7 +280,15 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                                                 ⏹️ Stop Camera
                                             </button>
                                         )}
-                                        <div id="reader" className="scanner-box" style={{ marginTop: '1rem', display: isScanning ? 'block' : 'none' }}></div>
+                                        <div
+                                            id="reader"
+                                            className="scanner-box"
+                                            style={{
+                                                marginTop: '1.5rem',
+                                                display: isScanning ? 'block' : 'none',
+                                                border: isScanning ? '2px solid var(--primary-color)' : 'none'
+                                            }}
+                                        ></div>
                                     </div>
                                 </div>
                             )}
@@ -297,7 +319,7 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                                     </div>
                                 </div>
                             </div>
-                            <p className="hint">This session expires in 5 minutes.</p>
+                            <p className="hint">This connection will expire in 5 minutes.</p>
                         </div>
                     )}
 
