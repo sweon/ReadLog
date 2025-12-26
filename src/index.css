@@ -140,36 +140,78 @@ button:focus-visible {
   display: none;
 }
 
+/* Mobile Back Button - Hidden on Desktop */
+.mobile-back-btn {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .app-container {
-    flex-direction: column;
-    height: auto;
-    overflow: visible;
+    /* Ensure it fills screen and behaves like a single page app */
+    height: 100%;
+    overflow: hidden;
   }
 
-  .sidebar-wrapper {
+  /* 
+     View Switching Logic 
+     controlled by classes 'view-sidebar' vs 'view-detail' 
+  */
+  .app-container.view-sidebar .sidebar-wrapper {
+    display: flex;
     width: 100% !important;
-    height: auto;
-    flex: none;
+    height: 100%;
     border-right: none;
   }
 
+  .app-container.view-sidebar .main-content {
+    display: none;
+  }
+
+  .app-container.view-detail .sidebar-wrapper {
+    display: none;
+  }
+
+  .app-container.view-detail .main-content {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    padding: 1rem;
+    overflow-y: auto;
+  }
+
+  /* Component Adjustments for Mobile */
   .sidebar {
     width: 100%;
-    height: auto;
-    flex: none;
-    border-bottom: 1px solid var(--border-color);
-    max-height: 50vh;
+    height: 100%;
+    border-right: none;
+    padding-bottom: 80px;
+    /* Space for bottom interaction if needed, or browser chrome */
   }
 
   .sidebar-resizer {
     display: none;
   }
 
-  .main-content {
-    width: 100%;
-    height: auto;
-    overflow: visible;
-    padding: 1rem;
+  /* Show Back Button on Mobile */
+  .mobile-back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-right: 0.75rem;
+    padding: 0.25rem;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  /* Adjust typography for mobile */
+  .book-header h1 {
+    font-size: 1.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }

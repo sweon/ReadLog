@@ -12,9 +12,10 @@ import { useLanguage } from '../contexts/LanguageContext';
 interface BookDetailProps {
     bookId: number;
     onDelete: () => void;
+    onBack?: () => void;
 }
 
-export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete }) => {
+export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete, onBack }) => {
     const { t } = useLanguage();
     const [pageInput, setPageInput] = useState('');
     const [warning, setWarning] = useState('');
@@ -123,6 +124,11 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete }) => {
             <div ref={exportRef} className="export-wrapper">
                 {/* Header / Title */}
                 <div className="book-header">
+                    {onBack && (
+                        <button className="mobile-back-btn" onClick={onBack}>
+                            ←
+                        </button>
+                    )}
                     <h1>{book.title}</h1>
                 </div>
 

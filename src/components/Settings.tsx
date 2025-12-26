@@ -6,7 +6,11 @@ import './Settings.css';
 
 import { useLanguage } from '../contexts/LanguageContext';
 
-export const Settings: React.FC = () => {
+interface SettingsProps {
+    onClose?: () => void;
+}
+
+export const Settings: React.FC<SettingsProps> = ({ onClose }) => {
     const { language, setLanguage, t } = useLanguage();
     const [selectedBooks, setSelectedBooks] = useState<number[]>([]);
     const [activeSection, setActiveSection] = useState<'data' | 'language' | 'help' | null>(null);
@@ -312,8 +316,12 @@ export const Settings: React.FC = () => {
     return (
         <div className="settings-page">
             <header className="settings-header">
-                {activeSection && (
+                {activeSection ? (
                     <button className="subview-back-btn" onClick={() => setActiveSection(null)}>
+                        ←
+                    </button>
+                ) : onClose && (
+                    <button className="subview-back-btn mobile-back-btn" onClick={onClose}>
                         ←
                     </button>
                 )}

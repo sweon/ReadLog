@@ -90,8 +90,10 @@ function App() {
     });
   };
 
+  const hasActiveView = selectedBookId !== null || showSettings;
+
   return (
-    <div className={`app-container ${isResizing ? 'resizing' : ''}`}>
+    <div className={`app-container ${isResizing ? 'resizing' : ''} ${hasActiveView ? 'view-detail' : 'view-sidebar'}`}>
       <div className="sidebar-wrapper" style={{ width: sidebarWidth }}>
         <Sidebar
           onSelectBook={(id) => {
@@ -121,9 +123,13 @@ function App() {
         </header>
 
         {showSettings ? (
-          <Settings />
+          <Settings onClose={() => setShowSettings(false)} />
         ) : selectedBookId ? (
-          <BookDetail bookId={selectedBookId} onDelete={() => setSelectedBookId(null)} />
+          <BookDetail
+            bookId={selectedBookId}
+            onDelete={() => setSelectedBookId(null)}
+            onBack={() => setSelectedBookId(null)}
+          />
         ) : (
           <div className="empty-state-main">
             <h1>{t('select_book_prompt')}</h1>
