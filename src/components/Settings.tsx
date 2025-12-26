@@ -110,8 +110,6 @@ export const Settings: React.FC = () => {
 
     const handleLanguageChange = (lang: 'en' | 'ko') => {
         setLanguage(lang);
-        localStorage.setItem('language', lang);
-        alert('Language setting saved. (UI translations coming soon)');
     };
 
     const handleShare = () => {
