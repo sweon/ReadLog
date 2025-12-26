@@ -11,6 +11,14 @@
     padding-bottom: 0;
     margin-bottom: 0;
     text-align: left;
+    display: flex;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .chart-container {
+        height: 250px !important;
+    }
 }
 
 .book-header h1 {
