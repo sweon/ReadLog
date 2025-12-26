@@ -31,32 +31,57 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
     };
 
     const {
-        needRefresh: [needRefresh],
+        needRefresh: [needRefresh, setNeedRefresh],
         updateServiceWorker,
-    } = useRegisterSW();
+    } = useRegisterSW({
+        onRegistered(r) {
+            // Check for updates periodically every hour
+            r && setInterval(() => {
+                r.update();
+            }, 60 * 60 * 1000);
+        }
+    });
 
     const handleUpdateCheck = async () => {
+        // If an update is already detected (indicator is red)
         if (needRefresh) {
-            showStatus('Updating to new version...');
+            showStatus('Installing updates...');
             updateServiceWorker(true);
-        } else {
-            if ('serviceWorker' in navigator) {
-                const registration = await navigator.serviceWorker.getRegistration();
-                if (registration) {
-                    showStatus('Checking for updates...');
-                    await registration.update();
-                    // Small delay to see if SW found anything
-                    setTimeout(() => {
-                        if (!needRefresh) {
-                            showStatus('App is up to date.');
-                        }
-                    }, 1500);
-                } else {
-                    showStatus('Service worker not found.');
+            return;
+        }
+
+        // Otherwise, manually trigger a check
+        if (!('serviceWorker' in navigator)) {
+            showStatus('PWA not supported.');
+            return;
+        }
+
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (!registration) {
+            showStatus('Service worker not active.');
+            return;
+        }
+
+        showStatus('Checking for updates...');
+
+        try {
+            await registration.update();
+
+            // Wait a bit for the service worker to discover the new content
+            // The 'needRefresh' state from useRegisterSW should update automatically
+            // But we add a small delay to provide feedback if nothing was found
+            setTimeout(() => {
+                // If the state hasn't changed to true, it means we are on the latest
+                const sw = registration.waiting || registration.installing;
+                if (!sw && !needRefresh) {
+                    showStatus('Already on the latest version.');
+                } else if (needRefresh) {
+                    showStatus('New version available!');
                 }
-            } else {
-                showStatus('PWA not supported.');
-            }
+            }, 2000);
+        } catch (err) {
+            console.error('Update check failed:', err);
+            showStatus('Failed to check for updates.');
         }
     };
 
