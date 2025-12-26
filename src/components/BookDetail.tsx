@@ -136,7 +136,7 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete, onBack
                 <div className="progress-section">
                     <div className="chart-container">
                         <ResponsiveContainer width="100%" height="100%">
-                            <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 10, bottom: 0 }}>
+                            <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                                 <XAxis
                                     dataKey="date"
@@ -149,7 +149,7 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete, onBack
                                     tick={{ fontSize: 11 }}
                                     angle={-45}
                                     textAnchor="end"
-                                    height={40}
+                                    height={55}
                                     interval="preserveStartEnd"
                                 />
                                 <YAxis
