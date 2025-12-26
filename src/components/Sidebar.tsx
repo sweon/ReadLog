@@ -31,7 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
     };
 
     const {
-        needRefresh: [needRefresh],
+        needRefresh: [needRefresh, setNeedRefresh],
         updateServiceWorker,
     } = useRegisterSW({
         onRegistered(r) {
@@ -46,6 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
         // If an update is already detected (indicator is red)
         if (needRefresh) {
             showStatus('Installing updates...');
+            setNeedRefresh(false); // Clear indicator immediately for feedback
             updateServiceWorker(true);
             return;
         }
