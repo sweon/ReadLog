@@ -311,6 +311,9 @@ export const Settings: React.FC<SettingsProps> = ({ onClose }) => {
                                 <p style={{ fontSize: '0.9rem', opacity: 0.7 }}>{t('legal_desc')}</p>
                             </div>
                         </div>
+                        <div className="help-footer">
+                            {t('app_info_desc')}
+                        </div>
                     </div>
                 );
             default:

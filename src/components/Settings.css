@@ -372,6 +372,15 @@
     text-indent: -1.2rem;
 }
 
+.help-footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.85rem;
+    opacity: 0.5;
+    text-align: center;
+}
+
 /* Footer & Other */
 .settings-footer {
     margin-top: 3rem;
