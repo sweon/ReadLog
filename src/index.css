@@ -87,14 +87,43 @@ button:focus-visible {
   overflow: hidden;
 }
 
+.sidebar-wrapper {
+  position: relative;
+  display: flex;
+  height: 100%;
+}
+
 .sidebar {
-  width: 300px;
+  width: 100%;
+  height: 100%;
   background-color: var(--sidebar-bg);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   padding: 1rem;
   overflow-y: auto;
+}
+
+.sidebar-resizer {
+  width: 4px;
+  height: 100%;
+  cursor: col-resize;
+  position: absolute;
+  right: -2px;
+  top: 0;
+  z-index: 10;
+  transition: background-color 0.2s;
+}
+
+.sidebar-resizer:hover,
+.resizing .sidebar-resizer {
+  background-color: var(--primary-color);
+  width: 4px;
+}
+
+.app-container.resizing {
+  cursor: col-resize;
+  user-select: none;
 }
 
 .main-content {
@@ -118,15 +147,23 @@ button:focus-visible {
     overflow: visible;
   }
 
+  .sidebar-wrapper {
+    width: 100% !important;
+    height: auto;
+    flex: none;
+    border-right: none;
+  }
+
   .sidebar {
     width: 100%;
     height: auto;
     flex: none;
-    /* Don't grow/shrink, let content decide height */
-    border-right: none;
     border-bottom: 1px solid var(--border-color);
     max-height: 50vh;
-    /* Optional constraint to keep it manageable */
+  }
+
+  .sidebar-resizer {
+    display: none;
   }
 
   .main-content {
