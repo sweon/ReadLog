@@ -32,12 +32,14 @@ export const Settings: React.FC = () => {
     const handleExport = async () => {
         if (!books) return;
 
-        const isExportAll = selectedBooks.length === 0;
-        const booksToExport = isExportAll ? books : books.filter(b => selectedBooks.includes(b.id!));
+        const booksToExport = selectedBooks.length > 0
+            ? books.filter(b => selectedBooks.includes(b.id!))
+            : books;
 
-        const logsToExport = isExportAll
-            ? await db.logs.toArray()
-            : await db.logs.where('bookId').anyOf(booksToExport.map(b => b.id!)).toArray();
+        const logsToExport = await db.logs
+            .where('bookId')
+            .anyOf(booksToExport.map(b => b.id!))
+            .toArray();
 
         const data = {
             version: 1,
@@ -243,13 +245,9 @@ export const Settings: React.FC = () => {
 
                                     <div className="selection-summary">
                                         {selectedBooks.length > 0 ? (
-                                            <span className="selected-count" onClick={handleDeselectAll}>
-                                                {selectedBooks.length} {t('selected')} (✕)
-                                            </span>
+                                            <span>{selectedBooks.length} {t('selected')}</span>
                                         ) : (
-                                            <span className="all-books-label" onClick={handleSelectAll}>
-                                                {t('all_books')} (→)
-                                            </span>
+                                            <span>{t('all_books')}</span>
                                         )}
                                     </div>
                                 </div>
