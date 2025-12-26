@@ -71,14 +71,18 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
     const [syncKey, setSyncKey] = useState('');
     const [pin, setPin] = useState('');
     const [inputPin, setInputPin] = useState('');
+    const [inputKey, setInputKey] = useState(''); // Separate state for manual entry
     const [syncStats, setSyncStats] = useState<{ books: number; logs: number } | null>(null);
     const [isScanning, setIsScanning] = useState(false);
+    const [isBidirectional, setIsBidirectional] = useState(false); // Track if we are sending back
     const html5QrCodeRef = React.useRef<Html5Qrcode | null>(null);
 
     // Host: Start sharing
-    const startHosting = async () => {
-        setStep('preparing');
-        setMsg('Encrypting library data...');
+    const startHosting = async (silent = false) => {
+        if (!silent) {
+            setStep('preparing');
+            setMsg('Encrypting library data...');
+        }
 
         try {
             const rawData = await exportDB();
@@ -87,7 +91,6 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
 
             const encrypted = await encryptData(rawData, newPin);
 
-            setMsg('Uploading through secure relay...');
             const formData = new FormData();
             const blob = new Blob([encrypted], { type: 'text/plain' });
             formData.append('file', blob, 'sync.txt');
@@ -105,11 +108,17 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
             const id = parts[parts.length - 2];
 
             setSyncKey(id);
-            setStep('ready');
-            setMsg('Connection Ready');
+            if (!silent) {
+                setStep('ready');
+                setMsg('Connection Ready');
+            }
+            return { id, pin: newPin };
         } catch (e: any) {
-            setStep('error');
-            setMsg('Failed to create sync session. Check your internet connection.');
+            if (!silent) {
+                setStep('error');
+                setMsg('Failed to create sync session. Check your internet connection.');
+            }
+            throw e;
         }
     };
 
@@ -120,8 +129,6 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
         setMsg('Connecting to sender...');
 
         try {
-            // RELIABILITY FIX: Use allorigins CORS proxy to fetch the raw data from tmpfiles
-            // tmpfiles.org blocks direct fetch GET from browsers, but CORS proxy bypasses this.
             const rawDlUrl = `https://tmpfiles.org/dl/${targetId}/sync.txt`;
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rawDlUrl)}`;
 
@@ -134,14 +141,14 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
 
             if (!encrypted) throw new Error("NOT_FOUND");
 
-            setMsg('Verifying passcode...');
+            setMsg('Merging into local library...');
             const rawData = await decryptData(encrypted, targetPin);
 
-            setMsg('Applying folders and logs...');
             const stats = await importDB(rawData);
 
             setSyncStats({ books: stats.booksImported, logs: stats.logsImported });
             setStep('success');
+            setMsg('Library Synced!');
         } catch (e: any) {
             setStep('error');
             if (e.message === 'INVALID_PIN') {
@@ -151,6 +158,19 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
             } else {
                 setMsg('Download failed. Make sure both devices are online.');
             }
+        }
+    };
+
+    const handleSendBack = async () => {
+        setIsBidirectional(true);
+        setMsg('Preparing response...');
+        try {
+            await startHosting(true); // Silent hosting
+            setStep('success');
+            setMsg('Union library is ready to be sent back!');
+        } catch (e) {
+            setIsBidirectional(false);
+            setMsg('Failed to prepare response.');
         }
     };
 
@@ -221,13 +241,13 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                 <div className="sync-tabs">
                     <button
                         className={`tab-btn ${mode === 'host' ? 'active' : ''}`}
-                        onClick={() => { stopScanner(); setMode('host'); setStep('idle'); setMsg(''); }}
+                        onClick={() => { stopScanner(); setMode('host'); setStep('idle'); setMsg(''); setIsBidirectional(false); }}
                     >
                         📤 {t('sync_devices')} (Send)
                     </button>
                     <button
                         className={`tab-btn ${mode === 'join' ? 'active' : ''}`}
-                        onClick={() => { stopScanner(); setMode('join'); setStep('idle'); setMsg(''); }}
+                        onClick={() => { stopScanner(); setMode('join'); setStep('idle'); setMsg(''); setIsBidirectional(false); }}
                     >
                         📥 {t('sync_devices')} (Receive)
                     </button>
@@ -240,7 +260,7 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                                 <div className="host-init">
                                     <div className="sync-illustration">🛰️</div>
                                     <p className="desc">{t('sync_data_desc')}</p>
-                                    <button className="premium-btn" onClick={startHosting}>Generate Sync Codes</button>
+                                    <button className="premium-btn" onClick={() => startHosting()}>Generate Sync Codes</button>
                                 </div>
                             ) : (
                                 <div className="join-init">
@@ -252,8 +272,8 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                                                 <input
                                                     type="text"
                                                     placeholder="e.g. 17210191"
-                                                    value={syncKey}
-                                                    onChange={e => setSyncKey(e.target.value.trim())}
+                                                    value={inputKey}
+                                                    onChange={e => setInputKey(e.target.value.trim())}
                                                 />
                                             </div>
                                             <div className="input-field">
@@ -272,8 +292,8 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                                         </div>
                                         <button
                                             className="premium-btn"
-                                            onClick={() => startJoining(syncKey, inputPin)}
-                                            disabled={!syncKey || inputPin.length < 4}
+                                            onClick={() => startJoining(inputKey, inputPin)}
+                                            disabled={!inputKey || inputPin.length < 4}
                                         >
                                             Connect & Sync
                                         </button>
@@ -329,27 +349,84 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                                     </div>
                                 </div>
                             </div>
-                            <p className="hint">This session expires in 5 minutes.</p>
+
+                            <div className="bidirectional-section">
+                                <div className="divider"><span>{t('sync_waiting_response')}</span></div>
+                                <div className="manual-form compact">
+                                    <div className="input-group">
+                                        <div className="input-field">
+                                            <input
+                                                type="text"
+                                                placeholder={t('sync_room_id')}
+                                                value={inputKey}
+                                                onChange={e => setInputKey(e.target.value.trim())}
+                                            />
+                                        </div>
+                                        <div className="input-field">
+                                            <input
+                                                type="tel"
+                                                placeholder={t('sync_passcode')}
+                                                className="pin-input small"
+                                                value={inputPin}
+                                                maxLength={4}
+                                                onChange={e => setInputPin(e.target.value.replace(/\D/g, ''))}
+                                            />
+                                        </div>
+                                        <button
+                                            className="secondary-btn"
+                                            onClick={() => startJoining(inputKey, inputPin)}
+                                            style={{ height: '48px', padding: '0 1rem' }}
+                                        >
+                                            📥
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     )}
 
                     {step === 'success' && (
                         <div className="success-view animate-in">
                             <div className="success-icon">✨</div>
-                            <h3>Library Synced!</h3>
+                            <h3>{msg}</h3>
                             {syncStats && (
                                 <div className="stats-results">
                                     <div className="stat">
                                         <strong>{syncStats.books}</strong>
-                                        <span>New Books</span>
+                                        <span>{t('books')}</span>
                                     </div>
                                     <div className="stat">
                                         <strong>{syncStats.logs}</strong>
-                                        <span>New Logs</span>
+                                        <span>{t('sessions')}</span>
                                     </div>
                                 </div>
                             )}
-                            <button className="premium-btn" onClick={() => window.location.reload()}>Finish & Reload</button>
+
+                            {!isBidirectional ? (
+                                <div className="union-actions">
+                                    <p className="hint" style={{ marginBottom: '1.5rem' }}>Want both devices to have the exact same combined library?</p>
+                                    <button className="premium-btn" onClick={handleSendBack} style={{ background: 'linear-gradient(135deg, #FF9800, #F44336)', marginBottom: '1rem' }}>
+                                        🔄 {t('sync_send_response')}
+                                    </button>
+                                    <button className="secondary-btn" onClick={() => window.location.reload()}>No, just finish</button>
+                                </div>
+                            ) : (
+                                <div className="ready-view">
+                                    <div className="qr-card mini">
+                                        <QRCodeCanvas value={qrValue} size={150} includeMargin={true} />
+                                        <div className="id-details">
+                                            <div className="id-item">
+                                                <code className="val">{syncKey}</code>
+                                            </div>
+                                            <div className="id-item">
+                                                <code className="val pin">{pin}</code>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p className="hint">Enter these codes on the first device to complete the union.</p>
+                                    <button className="premium-btn" onClick={() => window.location.reload()} style={{ marginTop: '1.5rem' }}>Finish & Reload</button>
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -358,7 +435,7 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
                             <div className="error-icon">⚠️</div>
                             <h3>Sync Failed</h3>
                             <p className="desc" style={{ marginBottom: '2rem' }}>{msg}</p>
-                            <button className="secondary-btn" onClick={() => { stopScanner(); setStep('idle'); }}>Go Back</button>
+                            <button className="secondary-btn" onClick={() => { stopScanner(); setStep('idle'); setIsBidirectional(false); }}>Go Back</button>
                         </div>
                     )}
                 </div>

@@ -43,58 +43,76 @@ export const importDB = async (json: string) => {
     let logsImported = 0;
 
     await db.transaction('rw', db.books, db.logs, async () => {
-        // MERGE BOOKS
-        for (const extBook of data.books as Book[]) {
+        // 1. Process Books
+        const extBooks = data.books as Book[];
+        const bookMap = new Map<number, number>(); // External ID -> Local ID
+
+        for (const extBook of extBooks) {
+            // Match criteria: Same title and total pages
             const existingBook = await db.books
                 .where('title').equals(extBook.title)
                 .filter(b => b.totalPages === extBook.totalPages)
                 .first();
 
+            let localId: number;
             if (existingBook) {
-                if (new Date(extBook.lastReadDate) > existingBook.lastReadDate) {
-                    await db.books.update(existingBook.id!, {
-                        lastReadDate: new Date(extBook.lastReadDate),
-                        status: extBook.status
-                    });
-                }
+                localId = existingBook.id!;
+                // Update fields to the "most representative" (Union logic)
+                const extStart = new Date(extBook.startDate);
+                const extLast = new Date(extBook.lastReadDate);
+
+                await db.books.update(localId, {
+                    // Take the earliest start date
+                    startDate: extStart < existingBook.startDate ? extStart : existingBook.startDate,
+                    // Take the latest read date
+                    lastReadDate: extLast > existingBook.lastReadDate ? extLast : existingBook.lastReadDate,
+                    // If either is 'completed', the union is 'completed'
+                    status: (extBook.status === 'completed' || existingBook.status === 'completed') ? 'completed' : 'reading'
+                });
             } else {
+                // New book
                 const { id, ...bookData } = extBook;
-                await db.books.add({
+                localId = await db.books.add({
                     ...bookData,
                     startDate: new Date(bookData.startDate),
                     lastReadDate: new Date(bookData.lastReadDate)
                 });
                 booksImported++;
             }
-        }
 
-        // MERGE LOGS
-        const allBooks = await db.books.toArray();
-        const bookMap = new Map<number, number>();
-
-        for (const extBook of data.books as Book[]) {
-            const localBook = allBooks.find(b => b.title === extBook.title && b.totalPages === extBook.totalPages);
-            if (localBook && extBook.id) {
-                bookMap.set(extBook.id, localBook.id!);
+            if (extBook.id) {
+                bookMap.set(extBook.id, localId);
             }
         }
 
-        for (const extLog of data.logs as Log[]) {
+        // 2. Process Logs
+        const extLogs = data.logs as Log[];
+        for (const extLog of extLogs) {
             const localBookId = bookMap.get(extLog.bookId);
             if (!localBookId) continue;
 
+            // UNION DEDUPLICATION:
+            // A session is considered the same if it's the same book, same page, and same DAY.
+            // This prevents duplicate entries when syncing multiple times or across devices with slightly different clocks.
+            const extDate = new Date(extLog.date);
+            const startOfDay = new Date(extDate);
+            startOfDay.setHours(0, 0, 0, 0);
+            const endOfDay = new Date(extDate);
+            endOfDay.setHours(23, 59, 59, 999);
+
             const exists = await db.logs
-                .where({ bookId: localBookId })
+                .where('bookId').equals(localBookId)
                 .filter(l =>
                     l.page === extLog.page &&
-                    l.date.getTime() === new Date(extLog.date).getTime()
+                    l.date >= startOfDay &&
+                    l.date <= endOfDay
                 )
                 .first();
 
             if (!exists) {
                 await db.logs.add({
                     bookId: localBookId,
-                    date: new Date(extLog.date),
+                    date: extDate,
                     page: extLog.page
                 });
                 logsImported++;

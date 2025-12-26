@@ -350,7 +350,59 @@
     text-align: center;
 }
 
-/* Success */
+/* Bidirectional section */
+.bidirectional-section {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border-color);
+}
+
+.manual-form.compact .input-group {
+    flex-direction: row;
+    gap: 0.5rem;
+    margin-bottom: 0;
+}
+
+.manual-form.compact input {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+    width: 100px;
+    border-radius: 10px;
+}
+
+.pin-input.small {
+    letter-spacing: 2px;
+    font-size: 1rem !important;
+}
+
+.qr-card.mini {
+    padding: 1rem;
+    border-radius: 18px;
+    max-width: 250px;
+    margin: 0 auto;
+    background: white;
+}
+
+.qr-card.mini .id-details {
+    flex-direction: row;
+    margin-top: 1rem;
+    gap: 0.5rem;
+}
+
+.qr-card.mini .id-item {
+    padding: 0.5rem;
+    flex: 1;
+}
+
+.qr-card.mini .val {
+    font-size: 0.9rem;
+}
+
+/* Success View */
+.success-view {
+    text-align: center;
+}
+
 .success-icon {
     font-size: 5rem;
     margin-bottom: 1.5rem;
@@ -375,6 +427,7 @@
 .stat strong {
     font-size: 1.75rem;
     color: var(--primary-color);
+    display: block;
 }
 
 .stat span {
@@ -382,7 +435,11 @@
     opacity: 0.6;
 }
 
-/* Error */
+/* Error/Secondary section */
+.error-view {
+    text-align: center;
+}
+
 .error-icon {
     font-size: 5rem;
     margin-bottom: 1.5rem;
@@ -397,4 +454,9 @@
     color: var(--text-color);
     font-weight: 700;
     cursor: pointer;
+    transition: 0.2s;
+}
+
+.secondary-btn:hover {
+    background: var(--bg-hover);
 }
