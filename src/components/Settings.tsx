@@ -32,14 +32,12 @@ export const Settings: React.FC = () => {
     const handleExport = async () => {
         if (!books) return;
 
-        const booksToExport = selectedBooks.length > 0
-            ? books.filter(b => selectedBooks.includes(b.id!))
-            : books;
+        const isExportAll = selectedBooks.length === 0;
+        const booksToExport = isExportAll ? books : books.filter(b => selectedBooks.includes(b.id!));
 
-        const logsToExport = await db.logs
-            .where('bookId')
-            .anyOf(booksToExport.map(b => b.id!))
-            .toArray();
+        const logsToExport = isExportAll
+            ? await db.logs.toArray()
+            : await db.logs.where('bookId').anyOf(booksToExport.map(b => b.id!)).toArray();
 
         const data = {
             version: 1,
@@ -202,13 +200,18 @@ export const Settings: React.FC = () => {
 
                                 <div className="backup-selection-container">
                                     <div className="selection-toolbar">
-                                        <input
-                                            type="text"
-                                            className="data-search-input"
-                                            placeholder={t('search_placeholder')}
-                                            value={dataSearch}
-                                            onChange={e => setDataSearch(e.target.value)}
-                                        />
+                                        <div className="data-search-wrapper">
+                                            <input
+                                                type="text"
+                                                className="data-search-input"
+                                                placeholder={t('search_placeholder')}
+                                                value={dataSearch}
+                                                onChange={e => setDataSearch(e.target.value)}
+                                            />
+                                            {dataSearch && (
+                                                <button className="data-clear-search-btn" onClick={() => setDataSearch('')}>×</button>
+                                            )}
+                                        </div>
                                         <div className="selection-buttons">
                                             <button onClick={handleSelectAll}>{t('select_all')}</button>
                                             <button onClick={handleDeselectAll}>{t('deselect_all')}</button>
@@ -240,9 +243,13 @@ export const Settings: React.FC = () => {
 
                                     <div className="selection-summary">
                                         {selectedBooks.length > 0 ? (
-                                            <span>{selectedBooks.length} {t('selected')}</span>
+                                            <span className="selected-count" onClick={handleDeselectAll}>
+                                                {selectedBooks.length} {t('selected')} (✕)
+                                            </span>
                                         ) : (
-                                            <span>{t('all_books')}</span>
+                                            <span className="all-books-label" onClick={handleSelectAll}>
+                                                {t('all_books')} (→)
+                                            </span>
                                         )}
                                     </div>
                                 </div>
