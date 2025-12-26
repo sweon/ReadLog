@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Peer, { DataConnection } from 'peerjs';
 import { QRCodeCanvas } from 'qrcode.react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import { exportDB, importDB } from '../db';
@@ -10,244 +9,261 @@ interface SyncModalProps {
     onClose: () => void;
 }
 
-type SyncStatus = 'idle' | 'initializing' | 'waiting' | 'connecting' | 'exchanging' | 'success' | 'error';
+// Security Helper: Simple AES encryption using PIN as secret
+const encryptData = async (data: string, pin: string) => {
+    const encoder = new TextEncoder();
+    const encodedData = encoder.encode(data);
+    const encodedPin = encoder.encode(pin);
+
+    const keyMaterial = await crypto.subtle.importKey("raw", encodedPin, "PBKDF2", false, ["deriveKey"]);
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const key = await crypto.subtle.deriveKey(
+        { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
+        keyMaterial,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt"]
+    );
+
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encodedData);
+
+    // Combine SALT + IV + ENCRYPTED_DATA
+    const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
+    combined.set(salt, 0);
+    combined.set(iv, salt.length);
+    combined.set(new Uint8Array(encrypted), salt.length + iv.length);
+
+    return btoa(String.fromCharCode(...combined));
+};
+
+const decryptData = async (base64Data: string, pin: string) => {
+    try {
+        const combined = new Uint8Array(atob(base64Data).split("").map(c => c.charCodeAt(0)));
+        const salt = combined.slice(0, 16);
+        const iv = combined.slice(16, 28);
+        const encrypted = combined.slice(28);
+
+        const encoder = new TextEncoder();
+        const encodedPin = encoder.encode(pin);
+        const keyMaterial = await crypto.subtle.importKey("raw", encodedPin, "PBKDF2", false, ["deriveKey"]);
+        const key = await crypto.subtle.deriveKey(
+            { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
+            keyMaterial,
+            { name: "AES-GCM", length: 256 },
+            false,
+            ["decrypt"]
+        );
+
+        const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, encrypted);
+        return new TextDecoder().decode(decrypted);
+    } catch (e) {
+        throw new Error("Invalid PIN or corrupted data.");
+    }
+};
+
+type Step = 'idle' | 'preparing' | 'ready' | 'joining' | 'merging' | 'success' | 'error';
 
 export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
     const { t } = useLanguage();
     const [mode, setMode] = useState<'host' | 'join'>('host');
-    const [status, setStatus] = useState<SyncStatus>('idle');
-    const [statusMsg, setStatusMsg] = useState('');
-    const [peerId, setPeerId] = useState('');
-    const [targetId, setTargetId] = useState('');
-    const [syncStats, setSyncStats] = useState<{ books: number, logs: number } | null>(null);
-    const [knownPeers, setKnownPeers] = useState<string[]>([]);
+    const [step, setStep] = useState<Step>('idle');
+    const [msg, setMsg] = useState('');
+    const [syncKey, setSyncKey] = useState(''); // This is the file.io link or ID
+    const [pin, setPin] = useState('');
+    const [inputPin, setInputPin] = useState('');
+    const [syncStats, setSyncStats] = useState<{ books: number; logs: number } | null>(null);
 
-    const peerRef = useRef<Peer | null>(null);
-    const connRef = useRef<DataConnection | null>(null);
+    // Host: Start sharing
+    const startHosting = async () => {
+        setStep('preparing');
+        setMsg('Encrypting your book logs...');
 
-    useEffect(() => {
-        const saved = localStorage.getItem('readlog_known_peers');
-        if (saved) setKnownPeers(JSON.parse(saved));
+        try {
+            const rawData = await exportDB();
+            // Generate a random 6-character PIN
+            const newPin = Math.random().toString(36).substring(2, 8).toUpperCase();
+            setPin(newPin);
 
-        return () => {
-            peerRef.current?.destroy();
-        };
-    }, []);
+            const encrypted = await encryptData(rawData, newPin);
 
-    const startPeer = (id?: string) => {
-        setStatus('initializing');
-        setStatusMsg('Waking up sync signal...');
+            setMsg('Uploading to secure relay...');
+            // Upload to file.io (anonymous one-time storage)
+            const formData = new FormData();
+            const blob = new Blob([encrypted], { type: 'text/plain' });
+            formData.append('file', blob, 'readlog_sync.txt');
 
-        if (peerRef.current) peerRef.current.destroy();
+            const res = await fetch('https://file.io/?expires=5m', {
+                method: 'POST',
+                body: formData
+            });
 
-        const myId = id || localStorage.getItem('readlog_peer_id') || Math.random().toString(36).substring(2, 10);
-        const peer = new Peer(myId);
-        peerRef.current = peer;
+            if (!res.ok) throw new Error("Relay server busy.");
+            const info = await res.json();
 
-        peer.on('open', (id) => {
-            setPeerId(id);
-            localStorage.setItem('readlog_peer_id', id);
-            setStatus('waiting');
-            setStatusMsg(id ? `Ready! Room ID: ${id}` : 'Signal ready.');
-        });
-
-        peer.on('connection', (conn) => {
-            handleConnection(conn);
-        });
-
-        peer.on('error', (err) => {
-            setStatus('error');
-            setStatusMsg(`Signal Error: ${err.type}`);
-        });
-    };
-
-    const handleConnection = (conn: DataConnection) => {
-        connRef.current = conn;
-        setStatus('exchanging');
-        setStatusMsg('Connected! Merging data...');
-
-        conn.on('open', async () => {
-            // Send our data first
-            const localData = await exportDB();
-            conn.send({ type: 'SYNC_DATA', payload: localData });
-        });
-
-        conn.on('data', async (data: any) => {
-            if (data?.type === 'SYNC_DATA') {
-                try {
-                    const stats = await importDB(data.payload);
-                    setSyncStats({ books: stats.booksImported, logs: stats.logsImported });
-                    setStatus('success');
-                    setStatusMsg('Sync successful!');
-
-                    // Add to known peers
-                    const peerId = conn.peer;
-                    if (peerId && !knownPeers.includes(peerId)) {
-                        const updated = [peerId, ...knownPeers].slice(0, 5);
-                        setKnownPeers(updated);
-                        localStorage.setItem('readlog_known_peers', JSON.stringify(updated));
-                    }
-                } catch (e) {
-                    setStatus('error');
-                    setStatusMsg('Failed to process received data.');
-                }
-            }
-        });
-
-        conn.on('close', () => {
-            if (status !== 'success') {
-                setStatus('error');
-                setStatusMsg('Connection lost.');
-            }
-        });
-    };
-
-    const connectToPeer = (id: string) => {
-        if (!id) return;
-        if (!peerRef.current) {
-            startPeer();
-            // We need to wait for peer to be open... 
-            // Better to let startPeer handle it or just require a button click
+            setSyncKey(info.key); // This is the short ID
+            setStep('ready');
+            setMsg('Ready to share!');
+        } catch (e: any) {
+            setStep('error');
+            setMsg(e.message);
         }
-
-        setStatus('connecting');
-        setStatusMsg(`Searching for ${id}...`);
-
-        const timer = setTimeout(() => {
-            if (peerRef.current) {
-                const conn = peerRef.current.connect(id);
-                handleConnection(conn);
-            }
-        }, 500); // Small delay to let peer init if needed
-
-        return () => clearTimeout(timer);
     };
 
-    const copyId = () => {
-        navigator.clipboard.writeText(peerId);
-        setStatusMsg('ID copied to clipboard!');
-        setTimeout(() => setStatusMsg(`Room ID: ${peerId}`), 2000);
+    // Join: Connect and merge
+    const startJoining = async (targetId: string, targetPin: string) => {
+        if (!targetId || targetPin.length < 4) return;
+        setStep('joining');
+        setMsg('Connecting to relay...');
+
+        try {
+            const res = await fetch(`https://file.io/${targetId}`);
+            if (!res.ok) throw new Error("Sync code expired or invalid.");
+            const encrypted = await res.text();
+
+            setMsg('Decrypting data...');
+            const rawData = await decryptData(encrypted, targetPin.toUpperCase());
+
+            setMsg('Merging library...');
+            const stats = await importDB(rawData);
+
+            setSyncStats({ books: stats.booksImported, logs: stats.logsImported });
+            setStep('success');
+            setMsg('Sync Success!');
+        } catch (e: any) {
+            setStep('error');
+            setMsg(e.message);
+        }
     };
 
     // Scanner Effect
     useEffect(() => {
         let scanner: Html5QrcodeScanner | null = null;
-        if (mode === 'join' && status === 'idle') {
+        if (mode === 'join' && step === 'idle') {
             scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }, false);
             scanner.render((text) => {
-                scanner?.clear();
-                connectToPeer(text);
+                // Expected format: KEY|PIN
+                if (text.includes('|')) {
+                    const [key, p] = text.split('|');
+                    scanner?.clear();
+                    startJoining(key, p);
+                } else {
+                    setMsg("Invalid QR Code format.");
+                }
             }, () => { });
         }
         return () => { scanner?.clear(); };
-    }, [mode, status]);
+    }, [mode, step]);
+
+    const qrValue = `${syncKey}|${pin}`;
 
     return (
         <div className="sync-modal-overlay">
-            <div className={`sync-modal status-${status}`}>
+            <div className={`sync-modal step-${step}`}>
                 <div className="sync-header">
                     <h2>{t('sync_devices')}</h2>
                     <button className="close-btn" onClick={onClose}>×</button>
                 </div>
 
                 <div className="sync-tabs">
-                    <button className={`tab-btn ${mode === 'host' ? 'active' : ''}`} onClick={() => setMode('host')}>
-                        📤 Host Data
+                    <button className={`tab-btn ${mode === 'host' ? 'active' : ''}`} onClick={() => { setMode('host'); setStep('idle'); }}>
+                        📤 Send Data
                     </button>
-                    <button className={`tab-btn ${mode === 'join' ? 'active' : ''}`} onClick={() => setMode('join')}>
-                        📥 Join Room
+                    <button className={`tab-btn ${mode === 'join' ? 'active' : ''}`} onClick={() => { setMode('join'); setStep('idle'); }}>
+                        📥 Receive Data
                     </button>
                 </div>
 
                 <div className="sync-body">
-                    <div className={`status-indicator status-${status}`}>
-                        <span className="dot"></span>
-                        <p>{statusMsg || t('sync_data_desc') || 'Ready to sync'}</p>
-                    </div>
-
-                    {status === 'idle' && (
-                        <div className="mode-selection">
+                    {step === 'idle' && (
+                        <div className="idle-view animate-in">
                             {mode === 'host' ? (
-                                <div className="host-start">
-                                    <p className="hint">Generate a QR code so another device can connect to you.</p>
-                                    <button className="premium-btn" onClick={() => startPeer()}>
-                                        Generate Sync Code
-                                    </button>
+                                <div className="host-init">
+                                    <div className="sync-illustration">🛰️</div>
+                                    <p className="desc">Generate a one-time secure link to sync your logs with another device.</p>
+                                    <button className="premium-btn" onClick={startHosting}>Create Sync Session</button>
                                 </div>
                             ) : (
-                                <div className="join-start">
-                                    <div className="manual-join">
-                                        <input
-                                            type="text"
-                                            placeholder="Enter Room ID"
-                                            value={targetId}
-                                            onChange={e => setTargetId(e.target.value)}
-                                            onKeyDown={e => e.key === 'Enter' && connectToPeer(targetId)}
-                                        />
-                                        <button className="join-btn" onClick={() => connectToPeer(targetId)}>Join</button>
-                                    </div>
-                                    <div className="scanner-wrapper">
-                                        <div id="reader"></div>
-                                    </div>
-                                    {knownPeers.length > 0 && (
-                                        <div className="recent-list">
-                                            <p className="hint">Recent Devices</p>
-                                            {knownPeers.map(id => (
-                                                <button key={id} onClick={() => connectToPeer(id)}>📱 {id}</button>
-                                            ))}
+                                <div className="join-init">
+                                    <div className="manual-form">
+                                        <div className="input-group">
+                                            <input
+                                                type="text"
+                                                placeholder="Enter Room ID"
+                                                value={syncKey}
+                                                onChange={e => setSyncKey(e.target.value)}
+                                            />
+                                            <input
+                                                type="text"
+                                                placeholder="Enter PIN"
+                                                className="pin-input"
+                                                value={inputPin}
+                                                maxLength={8}
+                                                onChange={e => setInputPin(e.target.value)}
+                                            />
                                         </div>
-                                    )}
+                                        <button className="premium-btn" onClick={() => startJoining(syncKey, inputPin)}>Join Room</button>
+                                    </div>
+                                    <div className="divider"><span>OR SCAN QR</span></div>
+                                    <div id="reader" className="scanner-box"></div>
                                 </div>
                             )}
                         </div>
                     )}
 
-                    {status === 'waiting' && (
-                        <div className="qr-box animate-in">
-                            <QRCodeCanvas value={peerId} size={200} includeMargin={true} />
-                            <div className="id-badge" onClick={copyId}>
-                                <code>{peerId}</code>
-                                <span className="copy-icon">📋</span>
+                    {(step === 'preparing' || step === 'joining' || step === 'merging') && (
+                        <div className="loading-view">
+                            <div className="sync-spinner"></div>
+                            <p className="status-msg">{msg}</p>
+                            <p className="pulsing-text">Please keep this window open</p>
+                        </div>
+                    )}
+
+                    {step === 'ready' && (
+                        <div className="ready-view animate-in">
+                            <div className="qr-card">
+                                <QRCodeCanvas value={qrValue} size={220} includeMargin={true} />
+                                <div className="id-details">
+                                    <div className="id-item">
+                                        <span className="label">Room ID</span>
+                                        <code className="val">{syncKey}</code>
+                                    </div>
+                                    <div className="id-item">
+                                        <span className="label">Encryption PIN</span>
+                                        <code className="val pin">{pin}</code>
+                                    </div>
+                                </div>
                             </div>
-                            <p className="hint">Scan this with your other device</p>
+                            <p className="hint">The link expires in 5 minutes and works only once.</p>
                         </div>
                     )}
 
-                    {(status === 'connecting' || status === 'exchanging' || status === 'initializing') && (
-                        <div className="sync-loader">
-                            <div className="spinner"></div>
-                            <p className="pulsing">Exchanging data packets...</p>
-                        </div>
-                    )}
-
-                    {status === 'success' && (
+                    {step === 'success' && (
                         <div className="success-view animate-in">
-                            <div className="big-check">✅</div>
-                            <h3>Sync Complete!</h3>
+                            <div className="success-icon">✨</div>
+                            <h3>Library Synced!</h3>
                             {syncStats && (
-                                <div className="stats-summary">
-                                    <div className="stat-item">
-                                        <span className="val">{syncStats.books}</span>
-                                        <span className="lab">New Books</span>
+                                <div className="stats-results">
+                                    <div className="stat">
+                                        <strong>{syncStats.books}</strong>
+                                        <span>New Books</span>
                                     </div>
-                                    <div className="stat-item">
-                                        <span className="val">{syncStats.logs}</span>
-                                        <span className="lab">New Logs</span>
+                                    <div className="stat">
+                                        <strong>{syncStats.logs}</strong>
+                                        <span>New Logs</span>
                                     </div>
                                 </div>
                             )}
-                            <button className="premium-btn" onClick={() => window.location.reload()}>
-                                Reload App
-                            </button>
+                            <button className="premium-btn" onClick={() => window.location.reload()}>Reload Library</button>
                         </div>
                     )}
 
-                    {status === 'error' && (
+                    {step === 'error' && (
                         <div className="error-view animate-in">
-                            <div className="big-x">❌</div>
-                            <h3>Something went wrong</h3>
-                            <p className="hint">{statusMsg}</p>
-                            <button className="secondary-btn" onClick={() => setStatus('idle')}>Try Again</button>
+                            <div className="error-icon">⚠️</div>
+                            <h3>Sync Failed</h3>
+                            <p className="desc">{msg}</p>
+                            <button className="secondary-btn" onClick={() => setStep('idle')}>Try Again</button>
                         </div>
                     )}
                 </div>
