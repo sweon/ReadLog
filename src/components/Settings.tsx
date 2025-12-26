@@ -11,8 +11,23 @@ export const Settings: React.FC = () => {
     const [selectedBooks, setSelectedBooks] = useState<number[]>([]);
     const [activeSection, setActiveSection] = useState<'data' | 'language' | 'help' | null>(null);
 
+    const [dataSearch, setDataSearch] = useState('');
+
     const books = useLiveQuery(() => db.books.toArray());
     const totalLogs = useLiveQuery(() => db.logs.count());
+
+    const filteredBooks = books?.filter(book =>
+        book.title.toLowerCase().includes(dataSearch.toLowerCase())
+    ) || [];
+
+    const handleSelectAll = () => {
+        if (!books) return;
+        setSelectedBooks(books.map(b => b.id!));
+    };
+
+    const handleDeselectAll = () => {
+        setSelectedBooks([]);
+    };
 
     const handleExport = async () => {
         if (!books) return;
@@ -184,26 +199,61 @@ export const Settings: React.FC = () => {
                             <div className="action-group">
                                 <h3>{t('backup_data')}</h3>
                                 <p>{t('backup_desc')}</p>
-                                <div className="book-selection-list">
-                                    {books?.map(book => (
-                                        <label key={book.id} className="selection-row">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedBooks.includes(book.id!)}
-                                                onChange={(e) => {
-                                                    if (e.target.checked) {
-                                                        setSelectedBooks([...selectedBooks, book.id!]);
-                                                    } else {
-                                                        setSelectedBooks(selectedBooks.filter(id => id !== book.id));
-                                                    }
-                                                }}
-                                            />
-                                            <span>{book.title}</span>
-                                        </label>
-                                    ))}
+
+                                <div className="backup-selection-container">
+                                    <div className="selection-toolbar">
+                                        <input
+                                            type="text"
+                                            className="data-search-input"
+                                            placeholder={t('search_placeholder')}
+                                            value={dataSearch}
+                                            onChange={e => setDataSearch(e.target.value)}
+                                        />
+                                        <div className="selection-buttons">
+                                            <button onClick={handleSelectAll}>{t('select_all')}</button>
+                                            <button onClick={handleDeselectAll}>{t('deselect_all')}</button>
+                                        </div>
+                                    </div>
+
+                                    <div className="book-selection-list">
+                                        {filteredBooks.length > 0 ? (
+                                            filteredBooks.map(book => (
+                                                <label key={book.id} className="selection-row">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedBooks.includes(book.id!)}
+                                                        onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                                setSelectedBooks([...selectedBooks, book.id!]);
+                                                            } else {
+                                                                setSelectedBooks(selectedBooks.filter(id => id !== book.id));
+                                                            }
+                                                        }}
+                                                    />
+                                                    <span className="book-name">{book.title}</span>
+                                                </label>
+                                            ))
+                                        ) : (
+                                            <div className="no-results-msg">{t('no_books')}</div>
+                                        )}
+                                    </div>
+
+                                    <div className="selection-summary">
+                                        {selectedBooks.length > 0 ? (
+                                            <span>{selectedBooks.length} {t('selected')}</span>
+                                        ) : (
+                                            <span>{t('all_books')}</span>
+                                        )}
+                                    </div>
                                 </div>
-                                <button className="settings-action-btn primary" onClick={handleExport}>{t('backup_now')}</button>
+
+                                <button className="settings-action-btn primary" onClick={handleExport}>
+                                    {selectedBooks.length > 0 ? t('backup_now') : `${t('backup_now')} (${t('all_books')})`}
+                                </button>
                             </div>
+
+                            <div className="action-divider"></div>
+
                             <div className="action-group">
                                 <h3>{t('restore_data')}</h3>
                                 <p>{t('restore_desc')}</p>

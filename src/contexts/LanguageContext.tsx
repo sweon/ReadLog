@@ -26,6 +26,10 @@ const translations: Translations = {
     installing_update: { en: 'Installing updates...', ko: '업데이트 설치 중...' },
     already_latest: { en: 'Already on the latest version.', ko: '이미 최신 버전입니다.' },
     update_found_reloading: { en: 'New version found! Reloading...', ko: '새 버전 발견! 재시작 중...' },
+    select_all: { en: 'Select All', ko: '전체 선택' },
+    deselect_all: { en: 'Deselect All', ko: '선택 해제' },
+    selected: { en: 'selected', ko: '개 선택됨' },
+    all_books: { en: 'All Books', ko: '모든 도서' },
 
     // Add Book Form
     book_title: { en: 'Book Title', ko: '도서 제목' },
