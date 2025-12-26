@@ -44,8 +44,8 @@ function App() {
       clientX = e.touches[0].clientX;
     }
 
-    // Min width based on header actions (approx 200px)
-    const newWidth = Math.max(200, Math.min(600, clientX));
+    // Min width based on header actions (ensure all icons are visible)
+    const newWidth = Math.max(260, Math.min(600, clientX));
     setSidebarWidth(newWidth);
     localStorage.setItem('sidebarWidth', newWidth.toString());
   };
