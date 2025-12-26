@@ -17,6 +17,7 @@ const translations: Translations = {
     sort_title: { en: 'Title', ko: '제목순' },
     sort_last_read: { en: 'Last Read', ko: '최근 읽은순' },
     sync_devices: { en: 'Sync Devices', ko: '기기 동기화' },
+    sync_data_desc: { en: 'Sync your reading data between two devices privately.', ko: '두 기기 간의 독서 데이터를 안전하게 동기화합니다.' },
     check_updates: { en: 'Check Updates', ko: '업데이트 확인' },
     update_available: { en: 'Update Available!', ko: '업데이트 가능!' },
     theme_light: { en: 'Switch to Light Mode', ko: '라이트 모드' },

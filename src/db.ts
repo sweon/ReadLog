@@ -39,17 +39,18 @@ export const exportDB = async () => {
 
 export const importDB = async (json: string) => {
     const data = JSON.parse(json);
+    let booksImported = 0;
+    let logsImported = 0;
+
     await db.transaction('rw', db.books, db.logs, async () => {
         // MERGE BOOKS
         for (const extBook of data.books as Book[]) {
-            // Check if book exists by title and pages
             const existingBook = await db.books
                 .where('title').equals(extBook.title)
                 .filter(b => b.totalPages === extBook.totalPages)
                 .first();
 
             if (existingBook) {
-                // Update dates if external is newer (simple heuristic)
                 if (new Date(extBook.lastReadDate) > existingBook.lastReadDate) {
                     await db.books.update(existingBook.id!, {
                         lastReadDate: new Date(extBook.lastReadDate),
@@ -57,22 +58,20 @@ export const importDB = async (json: string) => {
                     });
                 }
             } else {
-                // Add new book
                 const { id, ...bookData } = extBook;
                 await db.books.add({
                     ...bookData,
                     startDate: new Date(bookData.startDate),
                     lastReadDate: new Date(bookData.lastReadDate)
                 });
+                booksImported++;
             }
         }
 
         // MERGE LOGS
-        // We need to map external book IDs to local book IDs to insert logs correctly
         const allBooks = await db.books.toArray();
-        const bookMap = new Map<number, number>(); // External ID -> Local ID
+        const bookMap = new Map<number, number>();
 
-        // Build a map based on title/pages matching
         for (const extBook of data.books as Book[]) {
             const localBook = allBooks.find(b => b.title === extBook.title && b.totalPages === extBook.totalPages);
             if (localBook && extBook.id) {
@@ -82,9 +81,8 @@ export const importDB = async (json: string) => {
 
         for (const extLog of data.logs as Log[]) {
             const localBookId = bookMap.get(extLog.bookId);
-            if (!localBookId) continue; // Skip logs for books we couldn't match (shouldn't happen if book merge worked)
+            if (!localBookId) continue;
 
-            // Check if log exists
             const exists = await db.logs
                 .where({ bookId: localBookId })
                 .filter(l =>
@@ -99,7 +97,10 @@ export const importDB = async (json: string) => {
                     date: new Date(extLog.date),
                     page: extLog.page
                 });
+                logsImported++;
             }
         }
     });
+
+    return { booksImported, logsImported };
 };
