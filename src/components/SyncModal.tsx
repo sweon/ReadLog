@@ -142,32 +142,34 @@ export const SyncModal: React.FC<SyncModalProps> = ({ onClose }) => {
         if (stopPollingRef.current) return;
 
         try {
-            // Long poll (approx 20s) via ntfy
-            const res = await fetch(`https://ntfy.sh/readlog_sig_${targetRoom}/json?poll=1`);
-            const text = await res.text();
+            // Use cached=1 to get messages sent even if we were between poll cycles
+            const res = await fetch(`https://ntfy.sh/readlog_sig_${targetRoom}/json?poll=1&cached=1`);
+            if (!res.ok) throw new Error("NTFY_POLL_ERROR");
 
-            // ntfy can return multiple JSON objects in one stream if polled for longer
+            const text = await res.text();
             const lines = text.trim().split('\n');
+
             for (const line of lines) {
                 if (!line) continue;
                 try {
                     const data = JSON.parse(line);
                     if (data.event === 'message' && data.message.includes('|')) {
                         const [respId, respPin] = data.message.split('|');
-                        // Received response!
+                        // Signal found!
+                        stopPollingRef.current = true; // Stop any further polling
                         await startJoining(respId, respPin, true); // Pull response
-                        return; // Stop polling
+                        return;
                     }
-                } catch (e) { /* ignore parse error on partial lines */ }
+                } catch (e) { /* ignore parse error */ }
             }
 
-            // If we are still in 'ready' or 'success' (first half), keep polling
-            if (!stopPollingRef.current && !isFullyComplete) {
+            // Keep polling if not stopped
+            if (!stopPollingRef.current) {
                 setTimeout(() => pollForResponse(targetRoom), 2000);
             }
         } catch (e) {
             console.error("Polling error", e);
-            if (!stopPollingRef.current && !isFullyComplete) {
+            if (!stopPollingRef.current) {
                 setTimeout(() => pollForResponse(targetRoom), 5000);
             }
         }
