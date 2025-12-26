@@ -69,27 +69,67 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectBook, selectedBookId, 
 
         showStatus(t('check_updates') || 'Checking for updates...');
 
+        let updateDetected = false;
+
+        // Listener for new worker
+        const handleUpdateFound = () => {
+            updateDetected = true;
+            const newWorker = registration.installing;
+
+            if (newWorker) {
+                // Determine if we should notify immediately or wait for install
+                showStatus(t('installing_update') || 'Installing updates...');
+
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed') {
+                        // Worker is installed and waiting to activate
+                        showStatus(t('update_found_reloading') || 'New version found! Reloading...');
+                        setTimeout(() => updateServiceWorker(true), 500);
+                    }
+                });
+            }
+        };
+
+        registration.addEventListener('updatefound', handleUpdateFound);
+
         try {
             await registration.update();
 
-            // Give the browser more time to process the update and trigger the needRefresh state
-            // and check again for the waiting/installing workers.
-            setTimeout(async () => {
-                const updatedRegistration = await navigator.serviceWorker.getRegistration();
-                const hasWaiting = updatedRegistration?.waiting || updatedRegistration?.installing;
+            // Check immediately after update resolution for instant changes
+            if (!updateDetected) {
+                const waiting = registration.waiting;
+                const installing = registration.installing;
 
-                // We check both the Hook state 'needRefresh' and the raw Registration state
-                if (needRefresh || hasWaiting) {
+                if (waiting) {
+                    updateDetected = true;
                     showStatus(t('update_found_reloading') || 'New version found! Reloading...');
-                    setTimeout(() => {
-                        updateServiceWorker(true);
-                    }, 1000);
-                } else {
+                    setTimeout(() => updateServiceWorker(true), 500);
+                } else if (installing) {
+                    updateDetected = true;
+                    // Installing logic is handled by listener or we can attach here if listener missed (unlikely)
+                    showStatus(t('installing_update') || 'Installing updates...');
+                    installing.addEventListener('statechange', () => {
+                        if (installing.state === 'installed') {
+                            showStatus(t('update_found_reloading') || 'New version found! Reloading...');
+                            setTimeout(() => updateServiceWorker(true), 500);
+                        }
+                    });
+                }
+            }
+
+            // Grace period check: if after 3 seconds nothing has been detected, assume latest
+            // This covers race conditions where update() resolves before event fires or vice versa
+            setTimeout(() => {
+                const isStillProcessing = registration.installing || registration.waiting;
+                if (!updateDetected && !needRefresh && !isStillProcessing) {
+                    registration.removeEventListener('updatefound', handleUpdateFound);
                     showStatus(t('already_latest') || 'Already on the latest version.');
                 }
-            }, 3000); // Increased delay
+            }, 3000);
+
         } catch (err) {
             console.error('Update check failed:', err);
+            registration.removeEventListener('updatefound', handleUpdateFound);
             showStatus('Failed to check for updates.');
         }
     };
