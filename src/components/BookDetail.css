@@ -55,12 +55,18 @@
 
 .progress-section {
     background: var(--bg-color);
-    padding: 1rem;
+    padding: 1rem 1rem 1rem 1rem;
     border-radius: 12px;
     box-shadow: var(--shadow-md);
-    min-height: 400px;
+    min-height: auto;
     display: flex;
     flex-direction: column;
+}
+
+@media (max-width: 768px) {
+    .progress-section {
+        padding: 0.8rem 0.8rem 0.1rem 0.8rem;
+    }
 }
 
 .chart-container {
@@ -73,7 +79,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 1rem;
+    margin-top: 0.8rem;
+}
+
+@media (max-width: 768px) {
+    .chart-footer {
+        margin-top: 0rem;
+    }
 }
 
 .log-form-section {

@@ -149,7 +149,7 @@ export const BookDetail: React.FC<BookDetailProps> = ({ bookId, onDelete, onBack
                                     tick={{ fontSize: 11 }}
                                     angle={-45}
                                     textAnchor="end"
-                                    height={60}
+                                    height={40}
                                     interval="preserveStartEnd"
                                 />
                                 <YAxis
