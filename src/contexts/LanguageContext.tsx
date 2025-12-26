@@ -67,7 +67,7 @@ const translations: Translations = {
     language: { en: 'Language', ko: '언어' },
     app_description: {
         en: 'ReadLog is a simple, private reading progress tracker. It stores all your data locally in your browser, ensuring your reading habits stay private without any server-side storage.',
-        ko: 'ReadLog는 심플하고 프라이빗한 독서 진도 추적기입니다. 모든 데이터는 브라우저에 로컬로 저장되며, 서버에 기록을 남기지 않아 사용자의 독서 습관을 안전하게 보호합니다.'
+        ko: 'ReadLog는 독서 진도 기록 앱입니다. 모든 데이터는 브라우저에 로컬로 저장되며, 서버에 기록을 남기지 않습니다.'
     },
     help_about: { en: 'Help & About', ko: '도움말 및 정보' },
     how_to_use: { en: 'How to use', ko: '사용 방법' },
