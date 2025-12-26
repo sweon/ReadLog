@@ -135,7 +135,7 @@ export const Settings: React.FC<SettingsProps> = ({ onClose }) => {
         if (navigator.share) {
             navigator.share({
                 title: 'ReadLog',
-                text: 'Check out ReadLog, the best way to track your reading progress!',
+                text: 'Check out ReadLog, Local-only · No server Book Reading Progress Logger',
                 url: window.location.href,
             }).catch(console.error);
         } else {
