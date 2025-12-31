@@ -1,73 +1,82 @@
-# React + TypeScript + Vite
+# ReadLog
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Currently, two official plugins are available:
+**ReadLog** is a lightweight, private, and local-only book reading progress tracker. It helps you stay focused on your reading goals without worrying about your data being shared or stored on any external servers.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Everything you record—your books, your reading sessions, and your progress—is stored directly in your browser's local database (IndexedDB).
 
-## React Compiler
+## ✨ Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **📚 Essential Reading Tracking**: Easily add books and track your progress by recording the pages you've read in each session.
+- **📊 Progress Visualization**: 
+  - Visual charts showing both **Daily Progress** and **Cumulative Progress**.
+  - Automatic calculation of completion percentage and remaining pages.
+- **🔄 Private Device Sync**: Synchronize your data between multiple devices (e.g., PC and Mobile). 
+  - **End-to-End Encrypted**: Data is encrypted using AES-GCM before leaving your device.
+  - **Relay Signaling**: Seamless connection using Room IDs or QR Codes (no account required).
+  - **Automatic Bidirectional Sync**: One device scans and both devices stay updated.
+- **📂 Data Management**:
+  - Export your entire library or specific books to a JSON file for backup.
+  - Import data from backups to restore your history.
+  - Factory reset option to wipe all local data when needed.
+- **🌓 Modern UI/UX**:
+  - **Dark/Light Mode** support.
+  - **Customizable Font Size** for better readability.
+  - **Responsive Design** with a resizable sidebar and mobile-optimized views.
+- **📱 PWA (Progressive Web App)**: Install ReadLog as an app on your device for quick access and offline use.
+- **🌐 Multi-language Support**: Fully localized in **English** and **Korean**.
 
-## Expanding the ESLint configuration
+## 🛠️ Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Framework**: React 19 + TypeScript + Vite
+- **Database**: Dexie.js (IndexedDB wrapper)
+- **Synchronization**: AES-GCM Encryption + Relay Signaling (via ntfy & tmpfiles)
+- **Visuals**: Recharts (Progress charts), QR Code (Easy sync)
+- **Icons**: Emoji-based and CSS-styled icons
+- **Styling**: Vanilla CSS with modern features (CSS Variables, Flexbox/Grid)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🚀 Getting Started
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Prerequisites
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- [Node.js](https://nodejs.org/) (Latest LTS recommended)
+- npm or yarn
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Installation
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/ReadLog.git
+   cd ReadLog
+   ```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Build for production:
+   ```bash
+   npm run build
+   ```
+
+## 🔒 Privacy
+
+ReadLog is designed with privacy as the top priority:
+- **No Cloud Storage**: Your data never leaves your device unless you explicitly use the Sync feature.
+- **Local Database**: All records are stored in your browser's IndexedDB via Dexie.js.
+- **Serverless Sync**: Synchronization happens directly between devices via PeerJS; even during sync, your data is not stored on any intermediate server.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+*Read more, track better.*
