@@ -10,8 +10,8 @@ Everything you record—your books, your reading sessions, and your progress—i
 
 - **📚 Essential Reading Tracking**: Easily add books and track your progress by recording the pages you've read in each session.
 - **📊 Progress Visualization**: 
-  - Visual charts showing both **Daily Progress** and **Cumulative Progress**.
-  - Automatic calculation of completion percentage and remaining pages.
+  - Visual charts showing **Cumulative Progress**.
+  - Automatic calculation of completion percentage.
 - **🔄 Private Device Sync**: Synchronize your data between multiple devices (e.g., PC and Mobile). 
   - **End-to-End Encrypted**: Data is encrypted using AES-GCM before leaving your device.
   - **Relay Signaling**: Seamless connection using Room IDs or QR Codes (no account required).
@@ -47,7 +47,7 @@ Everything you record—your books, your reading sessions, and your progress—i
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/ReadLog.git
+   git clone https://github.com/sweon/ReadLog.git
    cd ReadLog
    ```
 
@@ -69,9 +69,9 @@ Everything you record—your books, your reading sessions, and your progress—i
 ## 🔒 Privacy
 
 ReadLog is designed with privacy as the top priority:
-- **No Cloud Storage**: Your data never leaves your device unless you explicitly use the Sync feature.
-- **Local Database**: All records are stored in your browser's IndexedDB via Dexie.js.
-- **Serverless Sync**: Synchronization happens directly between devices via PeerJS; even during sync, your data is not stored on any intermediate server.
+- **No Cloud Storage**: Your data is stored locally on your device. No accounts or central servers are used to save your reading history.
+- **End-to-End Encrypted Sync**: When syncing between devices, your library is encrypted locally using **AES-GCM** with a PIN you control. The data remains encrypted during transit and is only decrypted on your other device.
+- **Privacy-First Signaling**: Synchronization uses a temporary relay for connection, but your readable data is never stored on any intermediate server.
 
 ## 📄 License
 
