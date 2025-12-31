@@ -164,6 +164,51 @@
     margin-bottom: 1rem;
 }
 
+.settings-action-btn {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    border: 1px solid var(--border-color);
+}
+
+.settings-action-btn.primary {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+}
+
+.settings-action-btn.primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+}
+
+.settings-action-btn.secondary {
+    background: var(--sidebar-bg);
+    color: var(--text-color);
+}
+
+.settings-action-btn.secondary:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary-color);
+}
+
+.settings-action-btn.danger {
+    background: #fff1f0;
+    color: var(--danger-color);
+    border: 1px solid #ffa39e;
+}
+
+.settings-action-btn.danger:hover {
+    background: var(--danger-color);
+    color: white;
+    border-color: var(--danger-color);
+    box-shadow: 0 4px 12px rgba(255, 77, 79, 0.2);
+}
+
 .book-selection-list {
     max-height: 250px;
     overflow-y: auto;
@@ -313,8 +358,26 @@
 .action-divider {
     height: 1px;
     background: var(--border-color);
-    margin: 1rem 0;
+    margin: 1.5rem 0;
     opacity: 0.5;
+}
+
+.danger-zone {
+    margin-top: 0.5rem;
+}
+
+.danger-box {
+    border: 1px dashed #ffa39e;
+    border-radius: 12px;
+    padding: 1.25rem;
+    background: rgba(255, 77, 79, 0.02);
+}
+
+.warning-text {
+    color: var(--danger-color);
+    font-weight: 500;
+    font-size: 0.85rem !important;
+    margin-bottom: 1rem !important;
 }
 
 .language-options {

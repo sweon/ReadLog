@@ -131,6 +131,23 @@ export const Settings: React.FC<SettingsProps> = ({ onClose }) => {
         setLanguage(lang);
     };
 
+    const handleReset = async () => {
+        if (window.confirm(t('factory_reset_confirm'))) {
+            try {
+                await db.transaction('rw', db.books, db.logs, async () => {
+                    await db.books.clear();
+                    await db.logs.clear();
+                });
+                alert(t('reset_success'));
+                setSelectedBooks([]);
+                if (onClose) onClose();
+            } catch (err) {
+                console.error(err);
+                alert('Failed to reset data.');
+            }
+        }
+    };
+
     const handleShare = () => {
         if (navigator.share) {
             navigator.share({
@@ -269,6 +286,19 @@ export const Settings: React.FC<SettingsProps> = ({ onClose }) => {
                                 <div className="upload-wrapper">
                                     <button className="settings-action-btn secondary">{t('choose_file')}</button>
                                     <input type="file" accept=".json" onChange={handleImport} />
+                                </div>
+                            </div>
+
+                            <div className="action-divider"></div>
+
+                            <div className="action-group danger-zone">
+                                <h3>{t('factory_reset')}</h3>
+                                <p>{t('factory_reset_desc')}</p>
+                                <div className="danger-box">
+                                    <p className="warning-text">⚠️ {t('factory_reset_warning')}</p>
+                                    <button className="settings-action-btn danger" onClick={handleReset}>
+                                        {t('factory_reset_button')}
+                                    </button>
                                 </div>
                             </div>
                         </div>
